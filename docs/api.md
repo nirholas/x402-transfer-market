@@ -82,7 +82,7 @@ PRIVATE_KEY=0x... npm run client
   "status": "open",
   "signature": "4d02…hex hmac…",
   "algorithm": "HMAC-SHA256",
-  "payment": {
+  "settlement": {
     "rail": "evm",
     "network": "base-sepolia",
     "transaction": "0xabc…",
@@ -254,7 +254,7 @@ PRIVATE_KEY=0x... npm run client
     "signature": "4d02…hex hmac…",
     "algorithm": "HMAC-SHA256"
   },
-  "payment": {
+  "settlement": {
     "rail": "solana",
     "network": "solana-devnet",
     "transaction": "5Kq…signature…",
@@ -422,7 +422,7 @@ curl -s http://localhost:4023/listings
       "status": "open",
       "signature": "4d02…hex hmac…",
       "algorithm": "HMAC-SHA256",
-      "payment": {
+      "settlement": {
         "rail": "evm",
         "network": "base-sepolia",
         "transaction": "0xabc…",
@@ -485,7 +485,7 @@ curl -s http://localhost:4023/listings/lst_YOUR_ID
   "status": "open",
   "signature": "4d02…hex hmac…",
   "algorithm": "HMAC-SHA256",
-  "payment": {
+  "settlement": {
     "rail": "evm",
     "network": "base-sepolia",
     "transaction": "0xabc…",
@@ -704,6 +704,11 @@ curl -s http://localhost:4023/health
 |---|---|---|
 | `X-PAYMENT` | request | Base64 x402 payload. EVM: signed EIP-3009 authorization. Solana: signed serialized transaction. |
 | `X-PAYMENT-RESPONSE` | response | Base64 `{ success, rail, network, transaction, payer }` settlement receipt. |
+
+Paid responses also echo that receipt in the body under `settlement`, purely for
+convenience. It is attached **after** the artifact is signed and is excluded from
+signature verification, so you can post a whole paid response body straight to
+`POST /verify` and still get `{ "valid": true }`.
 
 ## Global error shape
 

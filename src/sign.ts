@@ -31,9 +31,17 @@ export function signArtifact<T extends object>(payload: T): Signed<T> {
   return { ...payload, signature: sign(payload), algorithm: "HMAC-SHA256" };
 }
 
-/** Verifies an artifact previously produced by signArtifact(). */
+/**
+ * Verifies an artifact previously produced by signArtifact().
+ *
+ * `signature`, `algorithm` and `settlement` are excluded from the payload:
+ * the first two are the envelope, and `settlement` is the x402 receipt the
+ * server echoes into paid responses *after* signing (see payments.ts →
+ * withSettlement). That echo is convenience, not part of the signed artifact,
+ * so a response body can be fed straight back here and still verify.
+ */
 export function verify(artifact: Record<string, unknown>): boolean {
-  const { signature, algorithm: _algorithm, ...payload } = artifact;
+  const { signature, algorithm: _algorithm, settlement: _settlement, ...payload } = artifact;
   if (typeof signature !== "string" || signature.length !== 64) return false;
   const expected = Buffer.from(sign(payload), "utf8");
   const provided = Buffer.from(signature, "utf8");

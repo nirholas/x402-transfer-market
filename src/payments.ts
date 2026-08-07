@@ -286,6 +286,21 @@ export function paymentOf(req: Request): PaymentContext | undefined {
   return (req as Request & { x402?: PaymentContext }).x402;
 }
 
+/**
+ * Echo the settlement receipt into a paid response alongside the artifact.
+ *
+ * It goes under `settlement` — a key `verify()` in sign.ts deliberately
+ * excludes — so the response body can be handed straight to `POST /verify`
+ * and still check out. The receipt is added *after* signing; it is a
+ * convenience copy of the `X-PAYMENT-RESPONSE` header, not signed content.
+ */
+export function withSettlement<T extends object>(
+  artifact: T,
+  req: Request,
+): T & { settlement: PaymentContext | null } {
+  return { ...artifact, settlement: paymentOf(req) ?? null };
+}
+
 /** One-line summary for the startup banner. */
 export function payToBanner(): string[] {
   const lines = [

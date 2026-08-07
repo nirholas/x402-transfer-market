@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { solanaCheckout } from "./checkout.js";
-import { paymentOf, paywall, payToBanner } from "./payments.js";
+import { paywall, payToBanner, withSettlement } from "./payments.js";
 import {
   buyListing,
   createListing,
@@ -101,7 +101,7 @@ app.post("/verify", (req, res) => {
 app.post("/list", (req, res) => {
   try {
     const listing = createListing(req.body ?? {});
-    res.status(201).json({ ...listing, payment: paymentOf(req) ?? null });
+    res.status(201).json(withSettlement(listing, req));
   } catch (err) {
     return fail(res, err);
   }
@@ -110,7 +110,7 @@ app.post("/list", (req, res) => {
 app.post("/buy/:listingId", (req, res) => {
   try {
     const result = buyListing(req.params.listingId, req.body?.buyer);
-    res.json({ ...result, payment: paymentOf(req) ?? null });
+    res.json(withSettlement(result, req));
   } catch (err) {
     return fail(res, err);
   }

@@ -192,7 +192,7 @@
                   "status": "open",
                   "signature": "4d02…hex hmac…",
                   "algorithm": "HMAC-SHA256",
-                  "payment": {
+                  "settlement": {
                     "rail": "evm",
                     "network": "base-sepolia",
                     "transaction": "0xabc…",
@@ -592,7 +592,7 @@
                     "signature": "4d02…hex hmac…",
                     "algorithm": "HMAC-SHA256"
                   },
-                  "payment": {
+                  "settlement": {
                     "rail": "solana",
                     "network": "solana-devnet",
                     "transaction": "5Kq…signature…",
@@ -926,7 +926,7 @@
                       "status": "open",
                       "signature": "4d02…hex hmac…",
                       "algorithm": "HMAC-SHA256",
-                      "payment": {
+                      "settlement": {
                         "rail": "evm",
                         "network": "base-sepolia",
                         "transaction": "0xabc…",
@@ -996,7 +996,7 @@
                   "status": "open",
                   "signature": "4d02…hex hmac…",
                   "algorithm": "HMAC-SHA256",
-                  "payment": {
+                  "settlement": {
                     "rail": "evm",
                     "network": "base-sepolia",
                     "transaction": "0xabc…",
