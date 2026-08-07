@@ -1,0 +1,53 @@
+{
+  "name": "x402-transfer-market",
+  "version": "0.1.0",
+  "description": "Transfer or resell held bookings between wallets — signed listings and reassigned booking tokens, all in-response",
+  "license": "Apache-2.0",
+  "author": "nirholas <nichxbt@gmail.com>",
+  "type": "module",
+  "main": "dist/server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nirholas/x402-transfer-market"
+  },
+  "homepage": "https://nirholas.github.io/x402-transfer-market/",
+  "keywords": [
+    "x402",
+    "micropayments",
+    "usdc",
+    "solana",
+    "base",
+    "ai-agents",
+    "agentic-commerce",
+    "transfer",
+    "resale",
+    "secondary-market",
+    "bookings",
+    "tokens"
+  ],
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "client": "tsx examples/agent-client.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "x402": "^1.2.0",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.98.0",
+    "@three-ws/x402-payment-modal": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "viem": "^2.21.54",
+    "x402-fetch": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

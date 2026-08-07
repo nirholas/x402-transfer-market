@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>x402-transfer-market — resell held bookings</title>
+<meta name="description" content="List and buy transferable booking tokens. Pay in USDC on Base or Solana; the reassigned token comes back in the payment response.">
+<script type="module" src="https://unpkg.com/@three-ws/x402-payment-modal"
+        data-x402-checkout-path="/api/x402-checkout"
+        data-x402-brand-name="x402-transfer-market"
+        data-x402-brand-url="https://github.com/nirholas/x402-transfer-market"
+        data-x402-footer-note="USDC on Base or Solana — secured by x402"></script>
+<style>
+:root{--accent:#0052ff;--bg:#fff;--fg:#111418;--muted:#5b6470;--card:#f5f7fa;--border:#e3e7ee;--ok:#0a7d33;--warn:#b3541e}
+@media (prefers-color-scheme:dark){:root{--bg:#0c0f14;--fg:#e8ecf2;--muted:#98a2b3;--card:#151a22;--border:#232b37;--ok:#3fce74;--warn:#e08a4e}}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;padding:0 20px}
+.wrap{max-width:760px;margin:0 auto;padding:48px 0}
+h1{font-size:1.9rem;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+h2{font-size:1.1rem;letter-spacing:-.01em}
+.tag{color:var(--muted);margin:8px 0 14px}
+.rails{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+.rail{flex:1 1 220px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.82rem}
+.rail b{display:block;color:var(--accent);font-size:.72rem;letter-spacing:.05em;margin-bottom:2px}
+.rail code{font-size:.72rem;word-break:break-all;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px}
+.step{font-size:.72rem;letter-spacing:.06em;color:var(--accent);font-weight:700;margin-bottom:4px}
+label{display:block;font-size:.85rem;font-weight:600;margin:12px 0 4px}
+input,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>div{flex:1 1 180px}
+.hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+.hint.bad{color:var(--warn)}
+button{padding:11px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:700;font-size:.93rem;cursor:pointer;margin-top:16px}
+button.ghost{background:transparent;color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+pre{background:#10151f;color:#d7dfec;padding:14px;border-radius:10px;overflow-x:auto;font-size:.78rem;margin-top:12px}
+a{color:var(--accent)}
+.note{font-size:.85rem;color:var(--muted);margin-top:14px}
+.ok{color:var(--ok);font-weight:600}
+.listing{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:10px;background:var(--bg)}
+.listing b{color:var(--accent)}
+.listing .meta{font-size:.82rem;color:var(--muted)}
+.listing button{margin-top:10px;padding:8px 14px;font-size:.85rem}
+.empty{font-size:.88rem;color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎟️ x402-<span>transfer-market</span></h1>
+  <p class="tag">Resell a held booking between wallets. The buyer pays the ask in USDC and the booking token — reassigned and re-signed — comes back in the payment response.</p>
+
+  <div class="rails">
+    <div class="rail"><b>EVM · BASE</b>USDC on base-sepolia<br><code>0x40252CFDF8B20Ed757D61ff157719F33Ec332402</code></div>
+    <div class="rail"><b>SOLANA</b>USDC on solana-devnet<br><code>WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW</code></div>
+  </div>
+
+  <div class="card">
+    <div class="step">STEP 1 · FREE</div>
+    <h2>Mint a booking token</h2>
+    <label for="holder">Holder wallet</label>
+    <input id="holder" placeholder="0xYourAddress or YourSolanaPubkey">
+    <p class="hint" id="holderHint">EVM address (0x + 40 hex) or Solana pubkey (base58, 32 bytes).</p>
+    <div class="row">
+      <div>
+        <label for="kind">Kind</label>
+        <select id="kind"><option value="table">table</option><option value="seat">seat</option><option value="slot">slot</option></select>
+      </div>
+      <div>
+        <label for="venue">Venue</label>
+        <input id="venue" value="Osteria Fiorentina">
+      </div>
+      <div>
+        <label for="party">Party</label>
+        <input id="party" type="number" value="2" min="1" max="40">
+      </div>
+    </div>
+    <button id="mintBtn">Mint token (free)</button>
+    <pre id="mintOut" style="display:none"></pre>
+  </div>
+
+  <div class="card">
+    <div class="step">STEP 2 · $0.005</div>
+    <h2>List it on the market</h2>
+    <div class="row">
+      <div>
+        <label for="ask">Ask</label>
+        <input id="ask" value="$0.30">
+      </div>
+      <div>
+        <label for="payoutTo">Payout wallet (optional)</label>
+        <input id="payoutTo" placeholder="may be on the other rail">
+      </div>
+    </div>
+    <p class="hint" id="payoutHint">Leave blank to be paid at the holding wallet.</p>
+    <button id="listBtn" data-x402-endpoint="/list" data-x402-method="POST" data-x402-merchant="x402-transfer-market" data-x402-action="List booking ($0.005)" disabled>
+      Pay $0.005 &amp; list
+    </button>
+    <pre id="listOut" style="display:none"></pre>
+  </div>
+
+  <div class="card">
+    <div class="step">STEP 3 · THE ASK</div>
+    <h2>Open listings</h2>
+    <label for="buyer">Buyer wallet</label>
+    <input id="buyer" placeholder="0xTheirAddress or TheirSolanaPubkey">
+    <p class="hint" id="buyerHint">The token gets reassigned to this wallet. Either rail.</p>
+    <button class="ghost" id="refreshBtn">Refresh listings</button>
+    <div id="listings"></div>
+    <pre id="buyOut" style="display:none"></pre>
+  </div>
+
+  <p class="note"><a href="https://github.com/nirholas/x402-transfer-market">GitHub</a> · <a href="https://nirholas.github.io/x402-transfer-market/">Docs</a> · <a href="/.well-known/x402">.well-known/x402</a> · <a href="/skill.md">skill.md</a></p>
+</div>
+<script>
+// Same dual-rail wallet check the server runs, so the form fails fast.
+const BASE58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function base58Bytes(s) {
+  const out = [];
+  for (const ch of s) {
+    let carry = BASE58.indexOf(ch);
+    if (carry < 0) return -1;
+    for (let i = 0; i < out.length; i++) { carry += out[i] * 58; out[i] = carry & 255; carry >>= 8; }
+    while (carry > 0) { out.push(carry & 255); carry >>= 8; }
+  }
+  let zeros = 0;
+  for (const ch of s) { if (ch !== "1") break; zeros++; }
+  return out.length + zeros;
+}
+function railOf(value) {
+  const v = (value || "").trim();
+  if (!v) return null;
+  if (/^0x[0-9a-fA-F]{40}$/.test(v)) return "evm";
+  if (v.length >= 32 && v.length <= 44 && base58Bytes(v) === 32) return "solana";
+  return "invalid";
+}
+function wireHint(inputId, hintId, base) {
+  const input = document.getElementById(inputId);
+  const hint = document.getElementById(hintId);
+  input.addEventListener("input", () => {
+    const rail = railOf(input.value);
+    if (rail === null) { hint.textContent = base; hint.className = "hint"; return; }
+    if (rail === "invalid") { hint.textContent = "Not a valid EVM address or Solana pubkey."; hint.className = "hint bad"; return; }
+    hint.textContent = rail === "evm" ? "Recognised: EVM address (Base rail)." : "Recognised: Solana pubkey (Solana rail).";
+    hint.className = "hint";
+  });
+}
+wireHint("holder", "holderHint", "EVM address (0x + 40 hex) or Solana pubkey (base58, 32 bytes).");
+wireHint("payoutTo", "payoutHint", "Leave blank to be paid at the holding wallet.");
+wireHint("buyer", "buyerHint", "The token gets reassigned to this wallet. Either rail.");
+
+let minted = null;
+
+const $ = (id) => document.getElementById(id);
+function show(id, value) {
+  const el = $(id);
+  el.style.display = "block";
+  el.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
+$("mintBtn").addEventListener("click", async () => {
+  const holder = $("holder").value.trim();
+  if (railOf(holder) !== "evm" && railOf(holder) !== "solana") {
+    show("mintOut", "Enter a valid EVM address or Solana pubkey to hold the token.");
+    return;
+  }
+  const res = await fetch("/bookings", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      holder,
+      booking: { kind: $("kind").value, venue: $("venue").value.trim(), party: Number($("party").value) },
+    }),
+  });
+  const token = await res.json();
+  show("mintOut", token);
+  if (token.tokenId) {
+    minted = token;
+    $("listBtn").disabled = false;
+    syncListBody();
+  }
+});
+
+function syncListBody() {
+  if (!minted) return;
+  $("listBtn").setAttribute("data-x402-body", JSON.stringify({
+    tokenId: minted.tokenId,
+    holderKey: minted.holderKey,
+    ask: $("ask").value.trim() || "$0.30",
+    payoutTo: $("payoutTo").value.trim() || undefined,
+  }));
+}
+$("ask").addEventListener("input", syncListBody);
+$("payoutTo").addEventListener("input", syncListBody);
+$("listBtn").addEventListener("pointerdown", syncListBody);
+
+async function refresh() {
+  const { listings } = await (await fetch("/listings")).json();
+  const box = $("listings");
+  box.innerHTML = "";
+  if (!listings.length) {
+    box.innerHTML = '<p class="empty">No open listings yet — mint and list one above.</p>';
+    return;
+  }
+  for (const l of listings) {
+    const el = document.createElement("div");
+    el.className = "listing";
+    el.innerHTML =
+      "<b>" + l.ask + "</b> · " + l.booking.kind + " at " + l.booking.venue +
+      '<div class="meta">party of ' + l.booking.party + " · " + l.booking.reference +
+      " · seller " + l.seller.rail + " " + l.seller.address.slice(0, 10) + "…</div>";
+    const btn = document.createElement("button");
+    btn.textContent = "Pay " + l.ask + " & take over";
+    btn.setAttribute("data-x402-endpoint", "/buy/" + l.listingId);
+    btn.setAttribute("data-x402-method", "POST");
+    btn.setAttribute("data-x402-merchant", "x402-transfer-market");
+    btn.setAttribute("data-x402-action", "Buy booking " + l.booking.reference);
+    const sync = () => btn.setAttribute("data-x402-body", JSON.stringify({ buyer: $("buyer").value.trim() }));
+    sync();
+    btn.addEventListener("pointerdown", sync);
+    el.appendChild(btn);
+    box.appendChild(el);
+  }
+  // The modal auto-binds new [data-x402-endpoint] elements via a
+  // MutationObserver; init() is the explicit nudge for injected markup.
+  if (window.X402 && typeof window.X402.init === "function") window.X402.init();
+}
+$("refreshBtn").addEventListener("click", refresh);
+refresh();
+
+addEventListener("x402:result", (e) => {
+  const detail = e.detail || {};
+  const body = detail.result || detail.body || detail;
+  const pay = detail.payment || body.payment;
+  const settled = pay ? "\n\n// settled on " + (pay.network || pay.rail) + " · tx " + (pay.transaction || "") : "";
+  if (body && body.listingId && body.document === "x402-transfer-market/listing") {
+    show("listOut", JSON.stringify(body, null, 2) + settled);
+    refresh();
+    return;
+  }
+  if (body && body.token) {
+    show("buyOut", JSON.stringify(body, null, 2) + settled);
+    refresh();
+  }
+});
+
+addEventListener("x402:error", (e) => {
+  show("buyOut", "Payment failed: " + ((e.detail && e.detail.error) || "unknown error"));
+});
+</script>
+</body>
+</html>

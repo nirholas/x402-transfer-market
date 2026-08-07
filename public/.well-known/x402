@@ -1,0 +1,582 @@
+{
+  "x402Version": 1,
+  "name": "x402-transfer-market",
+  "description": "Transfer or resell held bookings between wallets — signed listings and reassigned booking tokens, all in-response",
+  "homepage": "https://nirholas.github.io/x402-transfer-market/",
+  "skill": "skill.md",
+  "networks": [
+    "base-sepolia",
+    "base",
+    "solana-devnet",
+    "solana"
+  ],
+  "payTo": {
+    "evm": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+    "solana": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+  },
+  "facilitator": "https://x402.org/facilitator",
+  "resources": [
+    {
+      "resource": "POST /list",
+      "description": "Pay the $0.005 listing fee to put a transferable booking token on the market. Returns the signed listing (token, booking details, ask, payout wallet, expiry) in the response body.",
+      "price": "$0.005",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "asset": "USDC",
+          "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+          "price": "$0.005"
+        },
+        {
+          "scheme": "exact",
+          "network": "solana-devnet",
+          "asset": "USDC",
+          "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+          "price": "$0.005"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string"
+          },
+          "document": {
+            "const": "x402-transfer-market/listing"
+          },
+          "tokenId": {
+            "type": "string"
+          },
+          "booking": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "table",
+                  "seat",
+                  "slot"
+                ]
+              },
+              "venue": {
+                "type": "string"
+              },
+              "startsAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "party": {
+                "type": "integer"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "facePrice": {
+                "type": "string"
+              }
+            }
+          },
+          "seller": {
+            "type": "object",
+            "description": "Dual-rail wallet identity",
+            "properties": {
+              "rail": {
+                "type": "string",
+                "enum": [
+                  "evm",
+                  "solana"
+                ]
+              },
+              "address": {
+                "type": "string",
+                "description": "Lowercased 0x address, or base58 Solana pubkey"
+              }
+            }
+          },
+          "payoutTo": {
+            "type": "object",
+            "description": "Dual-rail wallet identity",
+            "properties": {
+              "rail": {
+                "type": "string",
+                "enum": [
+                  "evm",
+                  "solana"
+                ]
+              },
+              "address": {
+                "type": "string",
+                "description": "Lowercased 0x address, or base58 Solana pubkey"
+              }
+            }
+          },
+          "ask": {
+            "type": "string"
+          },
+          "listingFee": {
+            "type": "string"
+          },
+          "listedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "sold",
+              "expired"
+            ]
+          },
+          "signature": {
+            "type": "string"
+          },
+          "algorithm": {
+            "const": "HMAC-SHA256"
+          }
+        }
+      }
+    },
+    {
+      "resource": "POST /buy/:listingId",
+      "description": "Buy a listed booking. Priced at the listing's own ask. Returns the booking token reassigned to the buyer wallet (signed, with a fresh holderKey) plus a signed transfer receipt naming the seller's payout.",
+      "price": "$0.750",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "asset": "USDC",
+          "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+          "price": "$0.750"
+        },
+        {
+          "scheme": "exact",
+          "network": "solana-devnet",
+          "asset": "USDC",
+          "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+          "price": "$0.750"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "object",
+            "properties": {
+              "tokenId": {
+                "type": "string"
+              },
+              "document": {
+                "const": "x402-transfer-market/booking-token"
+              },
+              "booking": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "table",
+                      "seat",
+                      "slot"
+                    ]
+                  },
+                  "venue": {
+                    "type": "string"
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "party": {
+                    "type": "integer"
+                  },
+                  "reference": {
+                    "type": "string"
+                  },
+                  "facePrice": {
+                    "type": "string"
+                  }
+                }
+              },
+              "holder": {
+                "type": "object",
+                "description": "Dual-rail wallet identity",
+                "properties": {
+                  "rail": {
+                    "type": "string",
+                    "enum": [
+                      "evm",
+                      "solana"
+                    ]
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "Lowercased 0x address, or base58 Solana pubkey"
+                  }
+                }
+              },
+              "transferCount": {
+                "type": "integer",
+                "description": "Bumped on every reassignment"
+              },
+              "issuedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "held",
+                  "listed",
+                  "transferred",
+                  "expired"
+                ]
+              },
+              "signature": {
+                "type": "string"
+              },
+              "algorithm": {
+                "const": "HMAC-SHA256"
+              },
+              "holderKey": {
+                "type": "string",
+                "description": "Secret proving possession — returned only to the new holder"
+              }
+            }
+          },
+          "transfer": {
+            "type": "object",
+            "properties": {
+              "transferId": {
+                "type": "string"
+              },
+              "document": {
+                "const": "x402-transfer-market/transfer"
+              },
+              "listingId": {
+                "type": "string"
+              },
+              "tokenId": {
+                "type": "string"
+              },
+              "from": {
+                "type": "object",
+                "description": "Dual-rail wallet identity",
+                "properties": {
+                  "rail": {
+                    "type": "string",
+                    "enum": [
+                      "evm",
+                      "solana"
+                    ]
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "Lowercased 0x address, or base58 Solana pubkey"
+                  }
+                }
+              },
+              "to": {
+                "type": "object",
+                "description": "Dual-rail wallet identity",
+                "properties": {
+                  "rail": {
+                    "type": "string",
+                    "enum": [
+                      "evm",
+                      "solana"
+                    ]
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "Lowercased 0x address, or base58 Solana pubkey"
+                  }
+                }
+              },
+              "pricePaid": {
+                "type": "string"
+              },
+              "transferredAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "payout": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "object",
+                    "description": "Dual-rail wallet identity",
+                    "properties": {
+                      "rail": {
+                        "type": "string",
+                        "enum": [
+                          "evm",
+                          "solana"
+                        ]
+                      },
+                      "address": {
+                        "type": "string",
+                        "description": "Lowercased 0x address, or base58 Solana pubkey"
+                      }
+                    }
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "owed"
+                  }
+                }
+              },
+              "signature": {
+                "type": "string"
+              },
+              "algorithm": {
+                "const": "HMAC-SHA256"
+              }
+            }
+          },
+          "listing": {
+            "type": "object",
+            "description": "The listing, now marked sold"
+          }
+        }
+      }
+    },
+    {
+      "resource": "POST /bookings",
+      "description": "Mint a booking token held by a wallet on either rail. Free — this is the market's inventory.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tokenId": {
+            "type": "string"
+          },
+          "document": {
+            "const": "x402-transfer-market/booking-token"
+          },
+          "booking": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "table",
+                  "seat",
+                  "slot"
+                ]
+              },
+              "venue": {
+                "type": "string"
+              },
+              "startsAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "party": {
+                "type": "integer"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "facePrice": {
+                "type": "string"
+              }
+            }
+          },
+          "holder": {
+            "type": "object",
+            "description": "Dual-rail wallet identity",
+            "properties": {
+              "rail": {
+                "type": "string",
+                "enum": [
+                  "evm",
+                  "solana"
+                ]
+              },
+              "address": {
+                "type": "string",
+                "description": "Lowercased 0x address, or base58 Solana pubkey"
+              }
+            }
+          },
+          "transferCount": {
+            "type": "integer",
+            "description": "Bumped on every reassignment"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "listed",
+              "transferred",
+              "expired"
+            ]
+          },
+          "signature": {
+            "type": "string"
+          },
+          "algorithm": {
+            "const": "HMAC-SHA256"
+          },
+          "holderKey": {
+            "type": "string",
+            "description": "Secret proving possession — returned only to the new holder"
+          }
+        }
+      }
+    },
+    {
+      "resource": "GET /listings",
+      "description": "Browse every open listing on the market.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "listings": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "resource": "GET /listings/:id",
+      "description": "One listing, including whether it is still open.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object"
+      }
+    },
+    {
+      "resource": "GET /holdings/:wallet",
+      "description": "Every booking token currently held by one wallet, on whichever rail it lives.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "resource": "GET /transfers/:id",
+      "description": "A signed transfer receipt, including the seller payout it recorded.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object"
+      }
+    },
+    {
+      "resource": "GET /stats",
+      "description": "Tokens minted, listings open, transfers done, volume, and holders split by rail.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tokens": {
+            "type": "integer"
+          },
+          "openListings": {
+            "type": "integer"
+          },
+          "transfers": {
+            "type": "integer"
+          },
+          "volume": {
+            "type": "string"
+          },
+          "holdersByRail": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "resource": "POST /verify",
+      "description": "Verify the HMAC-SHA256 signature of any token, listing or transfer receipt.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "resource": "GET /health",
+      "description": "Liveness probe.",
+      "price": "$0",
+      "network": "base-sepolia",
+      "asset": "USDC",
+      "accepts": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "service": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>x402-transfer-market — resell held bookings between wallets</title>
+<meta name="description" content="Transfer or resell held bookings between wallets — signed listings and reassigned booking tokens, all in-response">
+<style>
+:root{--accent:#0052ff;--bg:#ffffff;--fg:#111418;--muted:#5b6470;--card:#f5f7fa;--border:#e3e7ee;--code-bg:#0f1420;--code-fg:#dce3f0}
+@media (prefers-color-scheme:dark){:root{--bg:#0c0f14;--fg:#e8ecf2;--muted:#98a2b3;--card:#151a22;--border:#232b37;--code-bg:#10151f;--code-fg:#d7dfec}}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px}
+header{padding:64px 0 40px;border-bottom:1px solid var(--border)}
+.pill{display:inline-block;font-size:.78rem;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 12px;margin-bottom:14px}
+.pill+.pill{margin-left:6px}
+h1{font-size:2.3rem;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+.tag{color:var(--muted);font-size:1.12rem;max-width:660px;margin-top:10px}
+.actions{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-block;text-decoration:none;font-weight:600;font-size:.95rem;padding:9px 18px;border-radius:8px;border:1px solid var(--border);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+h2{font-size:1.35rem;margin:44px 0 14px;letter-spacing:-.01em}
+p{margin-bottom:10px}
+pre{background:var(--code-bg);color:var(--code-fg);padding:16px;border-radius:10px;overflow-x:auto;font-size:.86rem;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+p code,td code,li code{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:.85em}
+.tablebox{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border)}
+th{background:var(--card);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+.price{color:var(--accent);font-weight:600;white-space:nowrap}
+.flow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.step{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1 1 150px;min-width:150px;font-size:.9rem}
+.step b{display:block;color:var(--accent);font-size:.8rem;letter-spacing:.04em;margin-bottom:2px}
+.arrow{color:var(--muted);font-size:1.2rem}
+.rails{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.rail{flex:1 1 260px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.rail b{display:block;color:var(--accent);font-size:.82rem;letter-spacing:.04em;margin-bottom:4px}
+.rail code{font-size:.78rem;word-break:break-all}
+footer{margin:56px 0 40px;padding-top:20px;border-top:1px solid var(--border);color:var(--muted);font-size:.9rem}
+a{color:var(--accent)}
+ul{padding-left:22px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<span class="pill">x402</span><span class="pill">USDC on Base + Solana</span>
+<h1>x402<span>-</span>transfer-market</h1>
+<p class="tag">A booking token is a signed, transferable claim on a held reservation. List one for a $0.005 fee, and a buyer pays the ask to receive the same token reassigned to their wallet — signed, in the 200 body. Holders live on either rail: an EVM address or a Solana pubkey.</p>
+<div class="actions">
+<a class="btn primary" href="https://github.com/nirholas/x402-transfer-market">GitHub</a>
+<a class="btn" href="tutorial.md">Tutorial</a>
+<a class="btn" href="api.md">API reference</a>
+<a class="btn" href="agents.md">For agents</a>
+<a class="btn" href="https://github.com/nirholas/x402-transfer-market/blob/main/skill.md">skill.md</a>
+<a class="btn" href="https://github.com/nirholas/x402-transfer-market/blob/main/public/.well-known/x402">.well-known/x402</a>
+<a class="btn" href="https://github.com/nirholas/x402-transfer-market#human-checkout">Checkout demo</a>
+</div>
+<pre>git clone https://github.com/nirholas/x402-transfer-market &amp;&amp; cd x402-transfer-market
+npm install &amp;&amp; npm run dev</pre>
+</header>
+
+<h2>Pay on either rail</h2>
+<p>Every paid route answers with a <strong>dual-rail 402</strong>. The <code>accepts</code> array carries one EVM entry and one Solana entry; your client (or the checkout modal) picks whichever wallet it has.</p>
+<div class="rails">
+  <div class="rail"><b>EVM · BASE</b>USDC on <code>base-sepolia</code> / <code>base</code><br><code>0x40252CFDF8B20Ed757D61ff157719F33Ec332402</code></div>
+  <div class="rail"><b>SOLANA</b>USDC on <code>solana-devnet</code> / <code>solana</code><br><code>WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW</code></div>
+</div>
+
+<h2>How a transfer works</h2>
+<div class="flow">
+  <div class="step"><b>1 · MINT</b>Free: a booking token held by an EVM address or Solana pubkey</div>
+  <span class="arrow">→</span>
+  <div class="step"><b>2 · LIST</b>$0.005 → signed listing with the ask and a payout wallet</div>
+  <span class="arrow">→</span>
+  <div class="step"><b>3 · 402</b>Buyer calls <code>/buy/:id</code>; server quotes the listing's ask on both rails</div>
+  <span class="arrow">→</span>
+  <div class="step"><b>4 · 200</b>Reassigned token + new holderKey + signed transfer receipt</div>
+</div>
+<p>The token keeps its <code>tokenId</code> across owners; what changes is <code>holder</code>, the bumped <code>transferCount</code>, the signature, and the <code>holderKey</code>. Only the current holder's key can list it again.</p>
+
+<h2>Pricing</h2>
+<div class="tablebox"><table>
+<tr><th>Route</th><th>Price</th><th>Returns</th></tr>
+<tr><td><code>POST /list</code></td><td class="price">$0.005</td><td>Signed listing of a transferable booking token</td></tr>
+<tr><td><code>POST /buy/:listingId</code></td><td class="price">$0.750 (the listing's own ask)</td><td>Booking token reassigned to the buyer wallet, signed</td></tr>
+<tr><td><code>POST /bookings</code></td><td class="price">free</td><td>Signed booking token + its secret holderKey</td></tr>
+<tr><td><code>GET /listings</code></td><td class="price">free</td><td>Open signed listings</td></tr>
+<tr><td><code>GET /listings/:id</code></td><td class="price">free</td><td>Signed listing</td></tr>
+<tr><td><code>GET /holdings/:wallet</code></td><td class="price">free</td><td>Signed booking tokens (holderKey redacted)</td></tr>
+<tr><td><code>GET /transfers/:id</code></td><td class="price">free</td><td>Signed transfer receipt</td></tr>
+<tr><td><code>GET /stats</code></td><td class="price">free</td><td>Aggregate market counters</td></tr>
+<tr><td><code>POST /verify</code></td><td class="price">free</td><td>`{ valid: true | false }`</td></tr>
+<tr><td><code>GET /health</code></td><td class="price">free</td><td>`{ ok: true }`</td></tr>
+</table></div>
+
+<h2>Quickstart</h2>
+<pre>import { wrapFetchWithPayment } from "x402-fetch";
+import { privateKeyToAccount } from "viem/accounts";
+
+const payFetch = wrapFetchWithPayment(fetch, privateKeyToAccount(process.env.PRIVATE_KEY));
+
+// free: mint a booking token held by an EVM wallet
+const token = await (await fetch("http://localhost:4023/bookings", {
+  method: "POST", headers: { "content-type": "application/json" },
+  body: JSON.stringify({ holder: "0xSellerAddress",
+    booking: { kind: "table", venue: "Osteria Fiorentina", party: 2 } })
+})).json();
+
+// $0.005: list it, payout to a Solana wallet
+const listing = await (await payFetch("http://localhost:4023/list", {
+  method: "POST", headers: { "content-type": "application/json" },
+  body: JSON.stringify({ tokenId: token.tokenId, holderKey: token.holderKey,
+    ask: "$0.75", payoutTo: "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW" })
+})).json();
+
+// ask price: buy it — the reassigned token comes back in the response
+const bought = await (await payFetch(`http://localhost:4023/buy/${listing.listingId}`, {
+  method: "POST", headers: { "content-type": "application/json" },
+  body: JSON.stringify({ buyer: "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW" })
+})).json();
+
+bought.token.holder;      // { rail: "solana", address: "Wwwu…T3WwW" }
+bought.token.holderKey;   // fresh secret — only the buyer sees it</pre>
+
+<h2>Discovery</h2>
+<ul>
+  <li><a href="https://github.com/nirholas/x402-transfer-market/blob/main/skill.md">skill.md</a> — agent-facing skill file</li>
+  <li><code>/.well-known/x402</code> — machine-readable manifest, both networks per resource (indexable by x402scan.com, the x402 Bazaar, agentic.market)</li>
+  <li><a href="https://github.com/nirholas/x402-transfer-market/blob/main/openapi.json">openapi.json</a> — OpenAPI 3.1 including the dual-rail 402 responses</li>
+</ul>
+
+<footer>Apache-2.0 · Part of the <a href="https://github.com/nirholas/x402-suite">x402 Suite</a> · Payments by <a href="https://x402.org">x402</a> — USDC on Base or Solana · <a href="mailto:nichxbt@gmail.com">nichxbt@gmail.com</a></footer>
+</div>
+</body>
+</html>

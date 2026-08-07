@@ -1,0 +1,1471 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "x402-transfer-market",
+    "version": "0.1.0",
+    "description": "Transfer or resell held bookings between wallets — signed listings and reassigned booking tokens, all in-response\n\nPaid routes are settled with x402 (HTTP 402) in USDC on **Base or Solana** — the client picks the rail from the 402 `accepts` array.",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "contact": {
+      "name": "nirholas",
+      "email": "nichxbt@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4023",
+      "description": "Local development"
+    },
+    {
+      "url": "https://{host}",
+      "description": "Self-hosted",
+      "variables": {
+        "host": {
+          "default": "example.com"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "paid",
+      "description": "x402-paid routes — the artifact is returned in the 200 body"
+    },
+    {
+      "name": "free",
+      "description": "Free routes"
+    }
+  ],
+  "paths": {
+    "/list": {
+      "post": {
+        "summary": "List a booking token you hold. Returns the signed listing.",
+        "description": "List a booking token you hold. Returns the signed listing. Paid: $0.005 in USDC on Base or Solana (x402).",
+        "operationId": "createListing",
+        "tags": [
+          "paid"
+        ],
+        "responses": {
+          "201": {
+            "description": "Signed listing of a transferable booking token",
+            "headers": {
+              "X-PAYMENT-RESPONSE": {
+                "description": "Base64 settlement receipt: { rail, network, transaction, payer }",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "listingId": {
+                      "type": "string"
+                    },
+                    "document": {
+                      "const": "x402-transfer-market/listing"
+                    },
+                    "tokenId": {
+                      "type": "string"
+                    },
+                    "booking": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "table",
+                            "seat",
+                            "slot"
+                          ]
+                        },
+                        "venue": {
+                          "type": "string"
+                        },
+                        "startsAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "party": {
+                          "type": "integer"
+                        },
+                        "reference": {
+                          "type": "string"
+                        },
+                        "facePrice": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "seller": {
+                      "type": "object",
+                      "description": "Dual-rail wallet identity",
+                      "properties": {
+                        "rail": {
+                          "type": "string",
+                          "enum": [
+                            "evm",
+                            "solana"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Lowercased 0x address, or base58 Solana pubkey"
+                        }
+                      }
+                    },
+                    "payoutTo": {
+                      "type": "object",
+                      "description": "Dual-rail wallet identity",
+                      "properties": {
+                        "rail": {
+                          "type": "string",
+                          "enum": [
+                            "evm",
+                            "solana"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Lowercased 0x address, or base58 Solana pubkey"
+                        }
+                      }
+                    },
+                    "ask": {
+                      "type": "string"
+                    },
+                    "listingFee": {
+                      "type": "string"
+                    },
+                    "listedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "sold",
+                        "expired"
+                      ]
+                    },
+                    "signature": {
+                      "type": "string"
+                    },
+                    "algorithm": {
+                      "const": "HMAC-SHA256"
+                    }
+                  }
+                },
+                "example": {
+                  "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                  "document": "x402-transfer-market/listing",
+                  "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                  "booking": {
+                    "kind": "table",
+                    "venue": "Osteria Fiorentina",
+                    "startsAt": "2026-02-14T19:30:00.000Z",
+                    "party": 2,
+                    "reference": "REF-9A3C71",
+                    "facePrice": "$0.400"
+                  },
+                  "seller": {
+                    "rail": "evm",
+                    "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                  },
+                  "payoutTo": {
+                    "rail": "solana",
+                    "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                  },
+                  "ask": "$0.750",
+                  "listingFee": "$0.005",
+                  "listedAt": "2026-01-11T10:00:00.000Z",
+                  "expiresAt": "2026-02-14T19:30:00.000Z",
+                  "status": "open",
+                  "signature": "4d02…hex hmac…",
+                  "algorithm": "HMAC-SHA256",
+                  "payment": {
+                    "rail": "evm",
+                    "network": "base-sepolia",
+                    "transaction": "0xabc…",
+                    "payer": "0xPayer…",
+                    "amount": "5000"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required — dual-rail x402 challenge listing a Base (EVM) and a Solana entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRequired"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "holderKey does not match the current holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown tokenId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Token is already on the market",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "The reservation start time has passed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tokenId",
+                  "holderKey"
+                ],
+                "properties": {
+                  "tokenId": {
+                    "type": "string"
+                  },
+                  "holderKey": {
+                    "type": "string"
+                  },
+                  "ask": {
+                    "type": [
+                      "string",
+                      "number"
+                    ]
+                  },
+                  "payoutTo": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                "holderKey": "hk_2f7c9e04b1a3d85f6c0e17b249a3d5e8",
+                "ask": "$0.75",
+                "payoutTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buy/{listingId}": {
+      "post": {
+        "summary": "Buy a listing. Returns the booking token reassigned to the buyer's wallet, re-signed, with a fresh holderKey and a signed transfer receipt.",
+        "description": "Buy a listing. Returns the booking token reassigned to the buyer's wallet, re-signed, with a fresh holderKey and a signed transfer receipt. Paid: $0.750 (the listing's own ask) in USDC on Base or Solana (x402).",
+        "operationId": "buyListing",
+        "tags": [
+          "paid"
+        ],
+        "parameters": [
+          {
+            "name": "listingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `listingId` from `POST /list` or `GET /listings`"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking token reassigned to the buyer wallet, signed",
+            "headers": {
+              "X-PAYMENT-RESPONSE": {
+                "description": "Base64 settlement receipt: { rail, network, transaction, payer }",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "object",
+                      "properties": {
+                        "tokenId": {
+                          "type": "string"
+                        },
+                        "document": {
+                          "const": "x402-transfer-market/booking-token"
+                        },
+                        "booking": {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "table",
+                                "seat",
+                                "slot"
+                              ]
+                            },
+                            "venue": {
+                              "type": "string"
+                            },
+                            "startsAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "party": {
+                              "type": "integer"
+                            },
+                            "reference": {
+                              "type": "string"
+                            },
+                            "facePrice": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "holder": {
+                          "type": "object",
+                          "description": "Dual-rail wallet identity",
+                          "properties": {
+                            "rail": {
+                              "type": "string",
+                              "enum": [
+                                "evm",
+                                "solana"
+                              ]
+                            },
+                            "address": {
+                              "type": "string",
+                              "description": "Lowercased 0x address, or base58 Solana pubkey"
+                            }
+                          }
+                        },
+                        "transferCount": {
+                          "type": "integer",
+                          "description": "Bumped on every reassignment"
+                        },
+                        "issuedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "held",
+                            "listed",
+                            "transferred",
+                            "expired"
+                          ]
+                        },
+                        "signature": {
+                          "type": "string"
+                        },
+                        "algorithm": {
+                          "const": "HMAC-SHA256"
+                        },
+                        "holderKey": {
+                          "type": "string",
+                          "description": "Secret proving possession — returned only to the new holder"
+                        }
+                      }
+                    },
+                    "transfer": {
+                      "type": "object",
+                      "properties": {
+                        "transferId": {
+                          "type": "string"
+                        },
+                        "document": {
+                          "const": "x402-transfer-market/transfer"
+                        },
+                        "listingId": {
+                          "type": "string"
+                        },
+                        "tokenId": {
+                          "type": "string"
+                        },
+                        "from": {
+                          "type": "object",
+                          "description": "Dual-rail wallet identity",
+                          "properties": {
+                            "rail": {
+                              "type": "string",
+                              "enum": [
+                                "evm",
+                                "solana"
+                              ]
+                            },
+                            "address": {
+                              "type": "string",
+                              "description": "Lowercased 0x address, or base58 Solana pubkey"
+                            }
+                          }
+                        },
+                        "to": {
+                          "type": "object",
+                          "description": "Dual-rail wallet identity",
+                          "properties": {
+                            "rail": {
+                              "type": "string",
+                              "enum": [
+                                "evm",
+                                "solana"
+                              ]
+                            },
+                            "address": {
+                              "type": "string",
+                              "description": "Lowercased 0x address, or base58 Solana pubkey"
+                            }
+                          }
+                        },
+                        "pricePaid": {
+                          "type": "string"
+                        },
+                        "transferredAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "payout": {
+                          "type": "object",
+                          "properties": {
+                            "to": {
+                              "type": "object",
+                              "description": "Dual-rail wallet identity",
+                              "properties": {
+                                "rail": {
+                                  "type": "string",
+                                  "enum": [
+                                    "evm",
+                                    "solana"
+                                  ]
+                                },
+                                "address": {
+                                  "type": "string",
+                                  "description": "Lowercased 0x address, or base58 Solana pubkey"
+                                }
+                              }
+                            },
+                            "amount": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "const": "owed"
+                            }
+                          }
+                        },
+                        "signature": {
+                          "type": "string"
+                        },
+                        "algorithm": {
+                          "const": "HMAC-SHA256"
+                        }
+                      }
+                    },
+                    "listing": {
+                      "type": "object",
+                      "description": "The listing, now marked sold"
+                    }
+                  }
+                },
+                "example": {
+                  "token": {
+                    "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                    "document": "x402-transfer-market/booking-token",
+                    "booking": {
+                      "kind": "table",
+                      "venue": "Osteria Fiorentina",
+                      "startsAt": "2026-02-14T19:30:00.000Z",
+                      "party": 2,
+                      "reference": "REF-9A3C71",
+                      "facePrice": "$0.400"
+                    },
+                    "holder": {
+                      "rail": "solana",
+                      "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                    },
+                    "transferCount": 1,
+                    "issuedAt": "2026-01-10T09:00:00.000Z",
+                    "expiresAt": "2026-02-14T19:30:00.000Z",
+                    "status": "held",
+                    "signature": "c7b3…hex hmac…",
+                    "algorithm": "HMAC-SHA256",
+                    "holderKey": "hk_9d4e17a0c62b3f815d0a74e9b2c16f38"
+                  },
+                  "transfer": {
+                    "transferId": "trf_71e2c5a9-3b40-4d18-9f2a-6c8b0d1e4f75",
+                    "document": "x402-transfer-market/transfer",
+                    "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                    "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                    "from": {
+                      "rail": "evm",
+                      "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                    },
+                    "to": {
+                      "rail": "solana",
+                      "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                    },
+                    "pricePaid": "$0.750",
+                    "transferredAt": "2026-01-12T11:00:00.000Z",
+                    "payout": {
+                      "to": {
+                        "rail": "solana",
+                        "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                      },
+                      "amount": "$0.750",
+                      "status": "owed"
+                    },
+                    "signature": "1b88…hex hmac…",
+                    "algorithm": "HMAC-SHA256"
+                  },
+                  "listing": {
+                    "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                    "document": "x402-transfer-market/listing",
+                    "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                    "booking": {
+                      "kind": "table",
+                      "venue": "Osteria Fiorentina",
+                      "startsAt": "2026-02-14T19:30:00.000Z",
+                      "party": 2,
+                      "reference": "REF-9A3C71",
+                      "facePrice": "$0.400"
+                    },
+                    "seller": {
+                      "rail": "evm",
+                      "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                    },
+                    "payoutTo": {
+                      "rail": "solana",
+                      "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                    },
+                    "ask": "$0.750",
+                    "listingFee": "$0.005",
+                    "listedAt": "2026-01-11T10:00:00.000Z",
+                    "expiresAt": "2026-02-14T19:30:00.000Z",
+                    "status": "sold",
+                    "signature": "4d02…hex hmac…",
+                    "algorithm": "HMAC-SHA256"
+                  },
+                  "payment": {
+                    "rail": "solana",
+                    "network": "solana-devnet",
+                    "transaction": "5Kq…signature…",
+                    "payer": "BuyerPubkey…",
+                    "amount": "750000"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not an EVM address or Solana pubkey",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required — dual-rail x402 challenge listing a Base (EVM) and a Solana entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRequired"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown listingId — not charged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Listing already bought — not charged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Listing expired — not charged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "buyer"
+                ],
+                "properties": {
+                  "buyer": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "buyer": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings": {
+      "post": {
+        "summary": "Mint a booking token held by a wallet on either rail. Free — this is the market's inventory.",
+        "description": "Mint a booking token held by a wallet on either rail. Free — this is the market's inventory. Free.",
+        "operationId": "mintToken",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "201": {
+            "description": "Signed booking token + its secret holderKey",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tokenId": {
+                      "type": "string"
+                    },
+                    "document": {
+                      "const": "x402-transfer-market/booking-token"
+                    },
+                    "booking": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "table",
+                            "seat",
+                            "slot"
+                          ]
+                        },
+                        "venue": {
+                          "type": "string"
+                        },
+                        "startsAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "party": {
+                          "type": "integer"
+                        },
+                        "reference": {
+                          "type": "string"
+                        },
+                        "facePrice": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "holder": {
+                      "type": "object",
+                      "description": "Dual-rail wallet identity",
+                      "properties": {
+                        "rail": {
+                          "type": "string",
+                          "enum": [
+                            "evm",
+                            "solana"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Lowercased 0x address, or base58 Solana pubkey"
+                        }
+                      }
+                    },
+                    "transferCount": {
+                      "type": "integer",
+                      "description": "Bumped on every reassignment"
+                    },
+                    "issuedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "held",
+                        "listed",
+                        "transferred",
+                        "expired"
+                      ]
+                    },
+                    "signature": {
+                      "type": "string"
+                    },
+                    "algorithm": {
+                      "const": "HMAC-SHA256"
+                    },
+                    "holderKey": {
+                      "type": "string",
+                      "description": "Secret proving possession — returned only to the new holder"
+                    }
+                  }
+                },
+                "example": {
+                  "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                  "document": "x402-transfer-market/booking-token",
+                  "booking": {
+                    "kind": "table",
+                    "venue": "Osteria Fiorentina",
+                    "startsAt": "2026-02-14T19:30:00.000Z",
+                    "party": 2,
+                    "reference": "REF-9A3C71",
+                    "facePrice": "$0.400"
+                  },
+                  "holder": {
+                    "rail": "evm",
+                    "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                  },
+                  "transferCount": 0,
+                  "issuedAt": "2026-01-10T09:00:00.000Z",
+                  "expiresAt": "2026-02-14T19:30:00.000Z",
+                  "status": "held",
+                  "signature": "a91f…hex hmac…",
+                  "algorithm": "HMAC-SHA256",
+                  "holderKey": "hk_2f7c9e04b1a3d85f6c0e17b249a3d5e8"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not an EVM address or Solana pubkey",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "holder"
+                ],
+                "properties": {
+                  "holder": {
+                    "type": "string"
+                  },
+                  "booking": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "table",
+                          "seat",
+                          "slot"
+                        ]
+                      },
+                      "venue": {
+                        "type": "string"
+                      },
+                      "startsAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "party": {
+                        "type": "integer"
+                      },
+                      "reference": {
+                        "type": "string"
+                      },
+                      "facePrice": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "holder": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+                "booking": {
+                  "kind": "table",
+                  "venue": "Osteria Fiorentina",
+                  "startsAt": "2026-02-14T19:30:00.000Z",
+                  "party": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/listings": {
+      "get": {
+        "summary": "Browse every open listing on the market.",
+        "description": "Browse every open listing on the market. Free.",
+        "operationId": "openListings",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Open signed listings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "listings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "listings": [
+                    {
+                      "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                      "document": "x402-transfer-market/listing",
+                      "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                      "booking": {
+                        "kind": "table",
+                        "venue": "Osteria Fiorentina",
+                        "startsAt": "2026-02-14T19:30:00.000Z",
+                        "party": 2,
+                        "reference": "REF-9A3C71",
+                        "facePrice": "$0.400"
+                      },
+                      "seller": {
+                        "rail": "evm",
+                        "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                      },
+                      "payoutTo": {
+                        "rail": "solana",
+                        "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                      },
+                      "ask": "$0.750",
+                      "listingFee": "$0.005",
+                      "listedAt": "2026-01-11T10:00:00.000Z",
+                      "expiresAt": "2026-02-14T19:30:00.000Z",
+                      "status": "open",
+                      "signature": "4d02…hex hmac…",
+                      "algorithm": "HMAC-SHA256",
+                      "payment": {
+                        "rail": "evm",
+                        "network": "base-sepolia",
+                        "transaction": "0xabc…",
+                        "payer": "0xPayer…",
+                        "amount": "5000"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/listings/{id}": {
+      "get": {
+        "summary": "One listing, including whether it is still open.",
+        "description": "One listing, including whether it is still open. Free.",
+        "operationId": "getListing",
+        "tags": [
+          "free"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The listingId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed listing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                  "document": "x402-transfer-market/listing",
+                  "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                  "booking": {
+                    "kind": "table",
+                    "venue": "Osteria Fiorentina",
+                    "startsAt": "2026-02-14T19:30:00.000Z",
+                    "party": 2,
+                    "reference": "REF-9A3C71",
+                    "facePrice": "$0.400"
+                  },
+                  "seller": {
+                    "rail": "evm",
+                    "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                  },
+                  "payoutTo": {
+                    "rail": "solana",
+                    "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                  },
+                  "ask": "$0.750",
+                  "listingFee": "$0.005",
+                  "listedAt": "2026-01-11T10:00:00.000Z",
+                  "expiresAt": "2026-02-14T19:30:00.000Z",
+                  "status": "open",
+                  "signature": "4d02…hex hmac…",
+                  "algorithm": "HMAC-SHA256",
+                  "payment": {
+                    "rail": "evm",
+                    "network": "base-sepolia",
+                    "transaction": "0xabc…",
+                    "payer": "0xPayer…",
+                    "amount": "5000"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown listingId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/holdings/{wallet}": {
+      "get": {
+        "summary": "Every booking token currently held by one wallet, on whichever rail it lives.",
+        "description": "Every booking token currently held by one wallet, on whichever rail it lives. Free.",
+        "operationId": "holdings",
+        "tags": [
+          "free"
+        ],
+        "parameters": [
+          {
+            "name": "wallet",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "EVM address or Solana pubkey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed booking tokens (holderKey redacted)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "wallet": {
+                      "type": "string"
+                    },
+                    "tokens": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "wallet": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+                  "tokens": [
+                    {
+                      "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                      "document": "x402-transfer-market/booking-token",
+                      "booking": {
+                        "kind": "table",
+                        "venue": "Osteria Fiorentina",
+                        "startsAt": "2026-02-14T19:30:00.000Z",
+                        "party": 2,
+                        "reference": "REF-9A3C71",
+                        "facePrice": "$0.400"
+                      },
+                      "holder": {
+                        "rail": "solana",
+                        "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                      },
+                      "transferCount": 1,
+                      "issuedAt": "2026-01-10T09:00:00.000Z",
+                      "expiresAt": "2026-02-14T19:30:00.000Z",
+                      "status": "held",
+                      "signature": "c7b3…hex hmac…",
+                      "algorithm": "HMAC-SHA256"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not an EVM address or Solana pubkey",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfers/{id}": {
+      "get": {
+        "summary": "A signed transfer receipt, including the seller payout it recorded.",
+        "description": "A signed transfer receipt, including the seller payout it recorded. Free.",
+        "operationId": "getTransfer",
+        "tags": [
+          "free"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The transferId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed transfer receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "transferId": "trf_71e2c5a9-3b40-4d18-9f2a-6c8b0d1e4f75",
+                  "document": "x402-transfer-market/transfer",
+                  "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                  "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                  "from": {
+                    "rail": "evm",
+                    "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                  },
+                  "to": {
+                    "rail": "solana",
+                    "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                  },
+                  "pricePaid": "$0.750",
+                  "transferredAt": "2026-01-12T11:00:00.000Z",
+                  "payout": {
+                    "to": {
+                      "rail": "solana",
+                      "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                    },
+                    "amount": "$0.750",
+                    "status": "owed"
+                  },
+                  "signature": "1b88…hex hmac…",
+                  "algorithm": "HMAC-SHA256"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown transferId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "summary": "Tokens minted, listings open, transfers done, volume, and holders split by rail.",
+        "description": "Tokens minted, listings open, transfers done, volume, and holders split by rail. Free.",
+        "operationId": "stats",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregate market counters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tokens": {
+                      "type": "integer"
+                    },
+                    "openListings": {
+                      "type": "integer"
+                    },
+                    "transfers": {
+                      "type": "integer"
+                    },
+                    "volume": {
+                      "type": "string"
+                    },
+                    "holdersByRail": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "example": {
+                  "tokens": 8,
+                  "openListings": 3,
+                  "transfers": 4,
+                  "volume": "$2.85",
+                  "holdersByRail": {
+                    "evm": 5,
+                    "solana": 3
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/verify": {
+      "post": {
+        "summary": "Verify the HMAC-SHA256 signature of any token, listing or transfer receipt.",
+        "description": "Verify the HMAC-SHA256 signature of any token, listing or transfer receipt. Free.",
+        "operationId": "verifyArtifact",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "`{ valid: true | false }`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "valid": true
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "transferId": "trf_71e2c5a9-3b40-4d18-9f2a-6c8b0d1e4f75",
+                "document": "x402-transfer-market/transfer",
+                "listingId": "lst_0c81b7de-2f44-4c9a-b1e3-8a0d5f6e2c11",
+                "tokenId": "bkt_5f3a91c2-77de-4a1b-8c0e-1d2f3a4b5c6d",
+                "from": {
+                  "rail": "evm",
+                  "address": "0x40252cfdf8b20ed757d61ff157719f33ec332402"
+                },
+                "to": {
+                  "rail": "solana",
+                  "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                },
+                "pricePaid": "$0.750",
+                "transferredAt": "2026-01-12T11:00:00.000Z",
+                "payout": {
+                  "to": {
+                    "rail": "solana",
+                    "address": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
+                  },
+                  "amount": "$0.750",
+                  "status": "owed"
+                },
+                "signature": "1b88…hex hmac…",
+                "algorithm": "HMAC-SHA256"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Liveness probe.",
+        "description": "Liveness probe. Free.",
+        "operationId": "health",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "`{ ok: true }`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "service": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "service": "x402-transfer-market"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaymentRequired": {
+        "type": "object",
+        "description": "x402 challenge. `accepts` always contains both an EVM and a Solana entry.",
+        "required": [
+          "x402Version",
+          "accepts"
+        ],
+        "properties": {
+          "x402Version": {
+            "type": "integer",
+            "const": 1
+          },
+          "error": {
+            "type": "string"
+          },
+          "accepts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRequirements"
+            }
+          }
+        },
+        "example": {
+          "x402Version": 1,
+          "error": "X-PAYMENT header is required",
+          "accepts": [
+            {
+              "scheme": "exact",
+              "network": "base-sepolia",
+              "maxAmountRequired": "10000",
+              "resource": "http://localhost:4023/list",
+              "description": "List a booking token you hold. Returns the signed listing.",
+              "mimeType": "application/json",
+              "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+              "maxTimeoutSeconds": 120,
+              "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+              "extra": {
+                "name": "USDC",
+                "version": "2"
+              }
+            },
+            {
+              "scheme": "exact",
+              "network": "solana-devnet",
+              "maxAmountRequired": "10000",
+              "resource": "http://localhost:4023/list",
+              "description": "List a booking token you hold. Returns the signed listing.",
+              "mimeType": "application/json",
+              "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+              "maxTimeoutSeconds": 120,
+              "asset": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+              "extra": {
+                "feePayer": "CKPKJWNdJEqa81x7CkZ14BVPiY6y16Sxs7owznqtWYp5"
+              }
+            }
+          ]
+        }
+      },
+      "PaymentRequirements": {
+        "type": "object",
+        "required": [
+          "scheme",
+          "network",
+          "maxAmountRequired",
+          "resource",
+          "description",
+          "mimeType",
+          "payTo",
+          "maxTimeoutSeconds",
+          "asset"
+        ],
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "const": "exact"
+          },
+          "network": {
+            "type": "string",
+            "enum": [
+              "base-sepolia",
+              "base",
+              "solana-devnet",
+              "solana"
+            ]
+          },
+          "maxAmountRequired": {
+            "type": "string",
+            "description": "Amount in USDC base units (6 decimals)"
+          },
+          "resource": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "payTo": {
+            "type": "string",
+            "description": "EVM 0x address or Solana base58 pubkey depending on the rail"
+          },
+          "maxTimeoutSeconds": {
+            "type": "integer"
+          },
+          "asset": {
+            "type": "string",
+            "description": "USDC contract address or SPL mint"
+          },
+          "outputSchema": {
+            "type": "object"
+          },
+          "extra": {
+            "type": "object",
+            "description": "EIP-712 domain on the EVM rail; `{ feePayer }` sponsor account on the Solana rail"
+          }
+        }
+      },
+      "Signature": {
+        "type": "object",
+        "description": "Every artifact carries an HMAC-SHA256 signature over its canonical JSON.",
+        "properties": {
+          "signature": {
+            "type": "string",
+            "description": "hex HMAC-SHA256"
+          },
+          "algorithm": {
+            "type": "string",
+            "const": "HMAC-SHA256"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

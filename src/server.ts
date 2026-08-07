@@ -1,0 +1,151 @@
+import "dotenv/config";
+import express from "express";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { solanaCheckout } from "./checkout.js";
+import { paymentOf, paywall, payToBanner } from "./payments.js";
+import {
+  buyListing,
+  createListing,
+  getListing,
+  getTransfer,
+  holdingsFor,
+  LIST_FEE,
+  MarketError,
+  marketStats,
+  mintToken,
+  openListings,
+} from "./service.js";
+import { verify } from "./sign.js";
+import { WalletError } from "./wallet.js";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const PORT = Number(process.env.PORT || 4023);
+
+const app = express();
+app.use(express.json({ limit: "64kb" }));
+
+// ---- x402 paywall ----------------------------------------------------------
+// POST /list        → flat listing fee
+// POST /buy/:id     → the listing's own ask, so the 402 quotes the real price
+//                     of the booking being bought. Unknown/closed listings
+//                     resolve to null so the caller gets a free 404/409.
+app.use(
+  paywall({
+    "POST /list": {
+      price: LIST_FEE,
+      description: "List a transferable booking token on the market",
+      outputSchema: { type: "object", description: "Signed listing" },
+    },
+    "POST /buy/:listingId": (req) => {
+      const listing = getListing(req.path.split("/")[2] || "");
+      if (!listing || listing.status !== "open") return null;
+      return {
+        price: listing.ask,
+        description: `Buy booking ${listing.booking.reference} at ${listing.booking.venue} (${listing.booking.kind}, party of ${listing.booking.party})`,
+        outputSchema: { type: "object", description: "Booking token reassigned to the buyer, signed" },
+      };
+    },
+  }),
+);
+
+// ---- Solana checkout helper for the browser modal --------------------------
+app.use("/api/x402-checkout", solanaCheckout());
+
+// ---- Free routes ------------------------------------------------------------
+app.get("/health", (_req, res) => res.json({ ok: true, service: "x402-transfer-market" }));
+app.get("/stats", (_req, res) => res.json(marketStats()));
+
+app.post("/bookings", (req, res) => {
+  try {
+    const token = mintToken(req.body ?? {});
+    // The holderKey is returned once, to the minter only.
+    res.status(201).json(token);
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+app.get("/listings", (_req, res) => res.json({ listings: openListings() }));
+
+app.get("/listings/:id", (req, res) => {
+  const listing = getListing(req.params.id);
+  if (!listing) return res.status(404).json({ error: "LISTING_NOT_FOUND", message: `No listing ${req.params.id}` });
+  res.json(listing);
+});
+
+app.get("/holdings/:wallet", (req, res) => {
+  try {
+    res.json({ wallet: req.params.wallet, tokens: holdingsFor(req.params.wallet) });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+app.get("/transfers/:id", (req, res) => {
+  const transfer = getTransfer(req.params.id);
+  if (!transfer) return res.status(404).json({ error: "TRANSFER_NOT_FOUND", message: `No transfer ${req.params.id}` });
+  res.json(transfer);
+});
+
+app.post("/verify", (req, res) => {
+  const artifact = req.body;
+  if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) {
+    return res.status(400).json({ error: "BAD_REQUEST", message: "POST a signed artifact as the JSON body" });
+  }
+  res.json({ valid: verify(artifact as Record<string, unknown>) });
+});
+
+// ---- Paid routes ------------------------------------------------------------
+app.post("/list", (req, res) => {
+  try {
+    const listing = createListing(req.body ?? {});
+    res.status(201).json({ ...listing, payment: paymentOf(req) ?? null });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+app.post("/buy/:listingId", (req, res) => {
+  try {
+    const result = buyListing(req.params.listingId, req.body?.buyer);
+    res.json({ ...result, payment: paymentOf(req) ?? null });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+function fail(res: express.Response, err: unknown): void {
+  if (err instanceof WalletError || err instanceof MarketError) {
+    res.status(err.statusCode).json({ error: err.code, message: err.message });
+    return;
+  }
+  throw err;
+}
+
+// ---- Static (demo page + /.well-known/x402) ---------------------------------
+app.get("/.well-known/x402", (_req, res) => {
+  res.type("application/json").send(readFileSync(path.join(ROOT, "public/.well-known/x402"), "utf8"));
+});
+app.get("/skill.md", (_req, res) => {
+  res.type("text/markdown").send(readFileSync(path.join(ROOT, "skill.md"), "utf8"));
+});
+app.use(express.static(path.join(ROOT, "public")));
+
+app.listen(PORT, () => {
+  console.log(`x402-transfer-market listening on http://localhost:${PORT}`);
+  console.log("  Pay in USDC on Base or Solana — your client picks the rail.");
+  for (const line of payToBanner()) console.log(line);
+  console.log("  Paid routes:");
+  console.log(`    POST /list                 ${LIST_FEE} listing fee -> signed listing`);
+  console.log("    POST /buy/:listingId       the listing's ask -> reassigned booking token");
+  console.log("  Free routes:");
+  console.log("    POST /bookings             mint a booking token (+ holderKey)");
+  console.log("    GET  /listings             browse open listings");
+  console.log("    GET  /holdings/:wallet     tokens held by an EVM address or Solana pubkey");
+  console.log("    GET  /transfers/:id        signed transfer receipt");
+  console.log("    POST /verify               verify any signed artifact");
+  console.log("    GET  /                     human checkout demo (payment modal)");
+  console.log("    GET  /.well-known/x402     discovery manifest");
+});
