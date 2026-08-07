@@ -99,7 +99,9 @@ For Claude Code: `claude mcp add x402-transfer-market -- npx -y tsx /absolute/pa
 x402 Solana client (or the browser modal's
 [`/server` helpers](https://www.npmjs.com/package/@three-ws/x402-payment-modal))
 and select the `solana-devnet` / `solana` entry from the 402 `accepts` array.
-The tool definitions above do not change — only the fetch wrapper does.
+That entry's `extra.feePayer` comes from the Solana facilitator
+(`SOLANA_FACILITATOR_URL`, PayAI by default), which is a different service from
+the EVM one. The tool definitions above do not change — only the fetch wrapper does.
 
 ## 4. Spending guardrails
 

@@ -125,7 +125,7 @@ PRIVATE_KEY=0x... npm run client
       "maxTimeoutSeconds": 120,
       "asset": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
       "extra": {
-        "feePayer": "CKPKJWNdJEqa81x7CkZ14BVPiY6y16Sxs7owznqtWYp5"
+        "feePayer": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4"
       }
     }
   ]
@@ -297,7 +297,7 @@ PRIVATE_KEY=0x... npm run client
       "maxTimeoutSeconds": 120,
       "asset": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
       "extra": {
-        "feePayer": "CKPKJWNdJEqa81x7CkZ14BVPiY6y16Sxs7owznqtWYp5"
+        "feePayer": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4"
       }
     }
   ]

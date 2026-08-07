@@ -154,7 +154,7 @@ main().catch((err) => {
  *         "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402", "maxAmountRequired": "5000" },
  *       { "scheme": "exact", "network": "solana-devnet", "asset": "4zMMC9…ncDU",
  *         "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW", "maxAmountRequired": "5000",
- *         "extra": { "feePayer": "CKPKJWNdJEqa81x7CkZ14BVPiY6y16Sxs7owznqtWYp5" } }
+ *         "extra": { "feePayer": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4" } }
  *     ]
  *   }
  * ------------------------------------------------------------------------- */

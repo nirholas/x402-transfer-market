@@ -14,7 +14,10 @@
     "evm": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
     "solana": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW"
   },
-  "facilitator": "https://x402.org/facilitator",
+  "facilitators": {
+    "evm": "https://x402.org/facilitator",
+    "solana": "https://facilitator.payai.network"
+  },
   "resources": [
     {
       "resource": "POST /list",

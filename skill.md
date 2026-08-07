@@ -455,7 +455,9 @@ holding both rails:
 - Protocol: **x402** (HTTP 402). Asset **USDC** on both rails.
 - EVM networks: `base-sepolia` (default) or `base` (`NETWORK=base`).
 - Solana networks: `solana-devnet` (default) or `solana` (`SOLANA_NETWORK=mainnet-beta`).
-- Facilitator: `https://x402.org/facilitator` — verifies and settles **both** rails (override with `FACILITATOR_URL`).
+- Facilitators — **one per rail, they are not interchangeable**:
+  - EVM: `https://x402.org/facilitator` (`FACILITATOR_URL`)
+  - Solana: `https://facilitator.payai.network` (`SOLANA_FACILITATOR_URL`) — the x402.org facilitator does not settle Solana.
 - Pay via `x402-fetch` (EVM), a Solana x402 client, or any x402-capable client: call the route, read `402`, pick an entry from `accepts`, sign, retry with the `X-PAYMENT` header. You get the artifact in the `200` body plus an `X-PAYMENT-RESPONSE` header carrying the settlement receipt (`{ rail, network, transaction, payer }`).
 
 ## Error codes

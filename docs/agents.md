@@ -31,8 +31,11 @@ An unpaid call to a paid route returns `402` with two `accepts` entries:
 | Solana | `solana-devnet` / `solana` | USDC `4zMMC9…ncDU` | `WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW` |
 
 An agent holding an EVM key uses the first entry; an agent holding a Solana
-keypair uses the second. Both are verified and settled by the same facilitator
-(`https://x402.org/facilitator`), so the merchant side is identical.
+keypair uses the second. Each rail is verified and settled by **its own**
+facilitator — `https://x402.org/facilitator` for Base,
+`https://facilitator.payai.network` for Solana — because no single facilitator
+here settles both. The server routes to the right one based on the rail the
+payment arrived on; from the client's side nothing changes.
 
 ```ts
 import { wrapFetchWithPayment } from "x402-fetch";
@@ -54,9 +57,11 @@ bought.token.holder;       // now the agent's wallet
 bought.transfer.payout;    // what the operator owes the seller
 ```
 
-On the Solana side, the `accepts` entry carries `extra.feePayer` — the
+On the Solana side, the `accepts` entry carries `extra.feePayer` — the Solana
 facilitator's sponsor account that pays the SOL network fee, so an agent needs
-only USDC, never SOL for gas.
+only USDC, never SOL for gas. That value is read from the Solana facilitator's
+`/supported` endpoint at runtime, so pointing `SOLANA_FACILITATOR_URL`
+elsewhere automatically advertises that facilitator's sponsor instead.
 
 ## 3. Verify what you bought
 

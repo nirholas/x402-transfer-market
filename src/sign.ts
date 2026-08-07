@@ -32,6 +32,30 @@ export function signArtifact<T extends object>(payload: T): Signed<T> {
 }
 
 /**
+ * Re-sign an artifact **in place** after its mutable fields changed.
+ *
+ * Artifacts are stored signed, and some of their fields legitimately move
+ * (a status flips to expired, a counter increments). Mutating a stored artifact
+ * without re-signing leaves a record whose signature no longer matches its
+ * contents — so every in-place mutation must be followed by this call.
+ *
+ * `signature`, `algorithm` and `settlement` are always excluded from the
+ * payload; pass extra field names to omit any server-side secrets that were
+ * never part of the signed document (e.g. a possession key).
+ */
+export function resignInPlace<T extends object>(artifact: T, ...omit: string[]): T {
+  const skip = new Set(["signature", "algorithm", "settlement", ...omit]);
+  const payload: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(artifact)) {
+    if (!skip.has(key)) payload[key] = value;
+  }
+  const target = artifact as Record<string, unknown>;
+  target.signature = sign(payload);
+  target.algorithm = "HMAC-SHA256";
+  return artifact;
+}
+
+/**
  * Verifies an artifact previously produced by signArtifact().
  *
  * `signature`, `algorithm` and `settlement` are excluded from the payload:

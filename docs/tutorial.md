@@ -28,7 +28,8 @@ The variables that matter:
 | `SOLANA_PAY_TO_ADDRESS` | `WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW` | Solana pubkey paid on the Solana rail |
 | `NETWORK` | `base-sepolia` | `base` for EVM mainnet |
 | `SOLANA_NETWORK` | `devnet` | `mainnet-beta` for Solana mainnet |
-| `FACILITATOR_URL` | `https://x402.org/facilitator` | Verifies + settles both rails |
+| `FACILITATOR_URL` | `https://x402.org/facilitator` | Verifies + settles the **EVM** rail |
+| `SOLANA_FACILITATOR_URL` | `https://facilitator.payai.network` | Verifies + settles the **Solana** rail |
 | `SIGNING_SECRET` | `dev-secret-change-me` | HMAC key for signed artifacts — change it |
 | `PORT` | `4023` | HTTP port |
 
@@ -47,8 +48,9 @@ The banner prints both rails:
 x402-transfer-market listening on http://localhost:4023
   Pay in USDC on Base or Solana — your client picks the rail.
   rail 1  EVM     network=base-sepolia  payTo=0x40252CFDF8B20Ed757D61ff157719F33Ec332402
+                  facilitator=https://x402.org/facilitator
   rail 2  Solana  network=solana-devnet  payTo=WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW
-  facilitator=https://x402.org/facilitator
+                  facilitator=https://facilitator.payai.network
 ```
 
 ## 4. Your first 402
@@ -93,7 +95,16 @@ Point any x402 Solana client at the same URL — it picks the `solana-devnet`
 entry instead. Browser wallets (Phantom) go through the drop-in
 [`@three-ws/x402-payment-modal`](https://www.npmjs.com/package/@three-ws/x402-payment-modal),
 which reads the same 402 and handles the prepare/sign/encode round trip.
-Nothing on the server changes: the facilitator verifies and settles both.
+
+Note that the two rails use **different facilitators**. `https://x402.org/facilitator`
+settles Base; Solana settlement goes to `SOLANA_FACILITATOR_URL`
+(`https://facilitator.payai.network` by default). The server picks the right one
+from the rail the payment arrived on. To check whether a facilitator handles a
+network, ask it:
+
+```bash
+curl -s https://facilitator.payai.network/supported | jq '.kinds[] | select(.network | startswith("solana"))'
+```
 
 ## 6. Read the artifact
 
@@ -121,14 +132,16 @@ NETWORK=base \
 SOLANA_NETWORK=mainnet-beta \
 PAY_TO_ADDRESS=0xYourRealAddress \
 SOLANA_PAY_TO_ADDRESS=YourRealSolanaPubkey \
-FACILITATOR_URL=https://your-mainnet-facilitator \
+FACILITATOR_URL=https://your-mainnet-evm-facilitator \
+SOLANA_FACILITATOR_URL=https://facilitator.payai.network \
 SIGNING_SECRET=$(openssl rand -hex 32) \
 npm run build && npm start
 ```
 
-Mainnet USDC is real money: use a mainnet-capable facilitator (Coinbase CDP's,
-for example), set a real `SIGNING_SECRET`, and put the service behind TLS so the
-`resource` URL in the 402 challenge matches what clients actually call.
+Mainnet USDC is real money: use mainnet-capable facilitators on **both** rails
+(Coinbase CDP's for Base, for example; PayAI already lists `solana` mainnet),
+set a real `SIGNING_SECRET`, and put the service behind TLS so the `resource`
+URL in the 402 challenge matches what clients actually call.
 
 ## 8. Wallet identity on both rails
 

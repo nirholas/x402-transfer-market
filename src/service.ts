@@ -17,7 +17,7 @@
  * the 200 body, with a fresh holderKey only the buyer sees.
  */
 import { randomBytes, randomUUID } from "node:crypto";
-import { signArtifact, type Signed } from "./sign.js";
+import { resignInPlace, signArtifact, type Signed } from "./sign.js";
 import { loadStore, saveStore } from "./store.js";
 import { requireWallet, sameWallet, walletRef, type Rail } from "./wallet.js";
 
@@ -174,6 +174,8 @@ function requireToken(tokenId: string): StoredToken {
   if (!token) throw new MarketError(404, "TOKEN_NOT_FOUND", `No booking token ${tokenId}`);
   if (token.status !== "expired" && new Date(token.expiresAt).getTime() < Date.now()) {
     token.status = "expired";
+    // holderKey is a server-side secret and was never part of the signed token.
+    resignInPlace(token, "holderKey");
     persist();
   }
   return token;
@@ -217,6 +219,7 @@ export function createListing(body: Record<string, unknown>): Signed<Listing> {
     status: "open",
   };
   token.status = "listed";
+  resignInPlace(token, "holderKey"); // token status moved — re-sign it
   const signed = signArtifact(listing);
   listings[listing.listingId] = signed;
   persist();
@@ -228,6 +231,7 @@ export function getListing(listingId: string): Signed<Listing> | undefined {
   if (!listing) return undefined;
   if (listing.status === "open" && new Date(listing.expiresAt).getTime() < Date.now()) {
     listing.status = "expired";
+    resignInPlace(listing);
     persist();
   }
   return listing;
@@ -279,6 +283,7 @@ export function buyListing(
   tokens[token.tokenId] = stored;
 
   listing.status = "sold";
+  resignInPlace(listing); // the stored listing changed — re-sign it
 
   const receipt: TransferReceipt = {
     transferId: `trf_${randomUUID()}`,

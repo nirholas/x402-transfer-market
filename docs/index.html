@@ -64,10 +64,10 @@ npm install &amp;&amp; npm run dev</pre>
 </header>
 
 <h2>Pay on either rail</h2>
-<p>Every paid route answers with a <strong>dual-rail 402</strong>. The <code>accepts</code> array carries one EVM entry and one Solana entry; your client (or the checkout modal) picks whichever wallet it has.</p>
+<p>Every paid route answers with a <strong>dual-rail 402</strong>. The <code>accepts</code> array carries one EVM entry and one Solana entry; your client (or the checkout modal) picks whichever wallet it has. Each rail settles through its own facilitator — no single one handles both.</p>
 <div class="rails">
-  <div class="rail"><b>EVM · BASE</b>USDC on <code>base-sepolia</code> / <code>base</code><br><code>0x40252CFDF8B20Ed757D61ff157719F33Ec332402</code></div>
-  <div class="rail"><b>SOLANA</b>USDC on <code>solana-devnet</code> / <code>solana</code><br><code>WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW</code></div>
+  <div class="rail"><b>EVM · BASE</b>USDC on <code>base-sepolia</code> / <code>base</code><br><code>0x40252CFDF8B20Ed757D61ff157719F33Ec332402</code><br><small>settled via <code>x402.org/facilitator</code></small></div>
+  <div class="rail"><b>SOLANA</b>USDC on <code>solana-devnet</code> / <code>solana</code><br><code>WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW</code><br><small>settled via <code>facilitator.payai.network</code></small></div>
 </div>
 
 <h2>How a transfer works</h2>

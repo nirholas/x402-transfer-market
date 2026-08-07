@@ -9,9 +9,11 @@
  *
  * When the client retries with an `X-PAYMENT` header we decode the envelope,
  * match it back to the rail it was built for, then verify + settle it through
- * the x402 facilitator (https://x402.org/facilitator handles both rails). The
- * settlement receipt goes out as `X-PAYMENT-RESPONSE` and the request proceeds
- * to the handler, which returns the purchased artifact in the 200 body.
+ * **that rail's facilitator**. Facilitators are not interchangeable: the
+ * reference x402.org one settles Base, while Solana settlement is handled by a
+ * Solana-capable facilitator (PayAI by default), so each rail gets its own
+ * client. The settlement receipt goes out as `X-PAYMENT-RESPONSE` and the
+ * request proceeds to the handler, which returns the artifact in the 200 body.
  *
  * If a rail cannot be configured (unknown network, no USDC mint for it) that
  * rail is omitted from `accepts` and logged — the service still serves the
@@ -36,8 +38,12 @@ import { useFacilitator } from "x402/verify";
 export const DEFAULT_EVM_PAY_TO = "0x40252CFDF8B20Ed757D61ff157719F33Ec332402";
 export const DEFAULT_SOLANA_PAY_TO = "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW";
 
-/** Facilitator sponsor that pays the SOL network fee (from /supported). */
-const FALLBACK_SOLANA_FEE_PAYER = "CKPKJWNdJEqa81x7CkZ14BVPiY6y16Sxs7owznqtWYp5";
+/**
+ * Facilitator sponsor that pays the SOL network fee, read from the Solana
+ * facilitator's /supported endpoint at runtime. This constant is the fallback
+ * for when that call fails — it is PayAI's sponsor account.
+ */
+const FALLBACK_SOLANA_FEE_PAYER = "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4";
 
 export const EVM_NETWORK: Network = process.env.NETWORK === "base" ? "base" : "base-sepolia";
 
@@ -46,8 +52,16 @@ export const SOLANA_NETWORK: Network =
     ? "solana"
     : "solana-devnet";
 
+/** EVM rail facilitator. The x402.org reference facilitator settles Base. */
 export const FACILITATOR_URL = (process.env.FACILITATOR_URL ||
   "https://x402.org/facilitator") as `${string}://${string}`;
+
+/**
+ * Solana rail facilitator — a *different* service. x402.org's facilitator does
+ * not settle Solana, so the Solana rail defaults to PayAI's, which does.
+ */
+export const SOLANA_FACILITATOR_URL = (process.env.SOLANA_FACILITATOR_URL ||
+  "https://facilitator.payai.network") as `${string}://${string}`;
 
 export const EVM_PAY_TO = process.env.PAY_TO_ADDRESS || DEFAULT_EVM_PAY_TO;
 export const SOLANA_PAY_TO = process.env.SOLANA_PAY_TO_ADDRESS || DEFAULT_SOLANA_PAY_TO;
@@ -55,7 +69,15 @@ export const SOLANA_PAY_TO = process.env.SOLANA_PAY_TO_ADDRESS || DEFAULT_SOLANA
 export const USING_DEFAULT_PAY_TO =
   !process.env.PAY_TO_ADDRESS || !process.env.SOLANA_PAY_TO_ADDRESS;
 
-const facilitator = useFacilitator({ url: FACILITATOR_URL });
+const evmFacilitator = useFacilitator({ url: FACILITATOR_URL });
+const svmFacilitator = useFacilitator({ url: SOLANA_FACILITATOR_URL });
+
+const isSolana = (network: string): boolean => network.startsWith("solana");
+
+/** The facilitator that can actually settle the rail this requirement is on. */
+function facilitatorFor(network: string) {
+  return isSolana(network) ? svmFacilitator : evmFacilitator;
+}
 
 // ---------------------------------------------------------------------------
 // Solana fee payer discovery (cached, with a static fallback)
@@ -64,17 +86,18 @@ const facilitator = useFacilitator({ url: FACILITATOR_URL });
 let feePayerPromise: Promise<string> | undefined;
 
 /**
- * The Solana `exact` scheme needs `extra.feePayer` — the facilitator's sponsor
- * account. We ask the facilitator's /supported endpoint once and cache it;
- * SOLANA_FEE_PAYER overrides, and a known-good constant is the fallback so the
- * Solana rail is still advertised when the network is unreachable.
+ * The Solana `exact` scheme needs `extra.feePayer` — the *Solana* facilitator's
+ * sponsor account, which differs per facilitator. We ask its /supported
+ * endpoint once and cache the answer; SOLANA_FEE_PAYER overrides it, and a
+ * known-good constant is the fallback so the Solana rail is still advertised
+ * when that call fails.
  */
 async function getSolanaFeePayer(): Promise<string> {
   if (process.env.SOLANA_FEE_PAYER) return process.env.SOLANA_FEE_PAYER;
   if (!feePayerPromise) {
     feePayerPromise = (async () => {
       try {
-        const supported = await facilitator.supported();
+        const supported = await svmFacilitator.supported();
         for (const kind of supported.kinds as Array<Record<string, any>>) {
           const network = String(kind.network || "");
           const wantsMainnet = SOLANA_NETWORK === "solana";
@@ -153,7 +176,7 @@ function buildRail(
     return null;
   }
   // EIP-712 domain only matters on the EVM rail; Solana carries `feePayer`.
-  const eip712 = network.startsWith("solana") ? undefined : (priced.asset as any).eip712;
+  const eip712 = isSolana(network) ? undefined : (priced.asset as any).eip712;
   return {
     scheme: "exact",
     network,
@@ -235,7 +258,8 @@ export function paywall(routes: RoutePrices): RequestHandler {
       return challenge(res, accepts, `No accepted rail matches network "${payload.network}"`);
     }
 
-    // 3. Verify, then settle — same facilitator API for both rails.
+    // 3. Verify, then settle — through the facilitator for *that* rail.
+    const facilitator = facilitatorFor(selected.network);
     try {
       const verification = await facilitator.verify(payload, selected);
       if (!verification.isValid) {
@@ -251,7 +275,7 @@ export function paywall(routes: RoutePrices): RequestHandler {
           JSON.stringify(
             toJsonSafe({
               success: true,
-              rail: selected.network.startsWith("solana") ? "solana" : "evm",
+              rail: isSolana(selected.network) ? "solana" : "evm",
               network: selected.network,
               transaction: receipt.transaction,
               payer: (receipt as { payer?: string }).payer ?? null,
@@ -260,7 +284,7 @@ export function paywall(routes: RoutePrices): RequestHandler {
         ),
       );
       (req as Request & { x402?: unknown }).x402 = {
-        rail: selected.network.startsWith("solana") ? "solana" : "evm",
+        rail: isSolana(selected.network) ? "solana" : "evm",
         network: selected.network,
         transaction: receipt.transaction,
         payer: (receipt as { payer?: string }).payer ?? null,
@@ -268,7 +292,8 @@ export function paywall(routes: RoutePrices): RequestHandler {
       };
       return next();
     } catch (err) {
-      return challenge(res, accepts, `Facilitator error: ${(err as Error).message}`);
+      const which = isSolana(selected.network) ? SOLANA_FACILITATOR_URL : FACILITATOR_URL;
+      return challenge(res, accepts, `Facilitator error (${which}): ${(err as Error).message}`);
     }
   };
 }
@@ -305,8 +330,9 @@ export function withSettlement<T extends object>(
 export function payToBanner(): string[] {
   const lines = [
     `  rail 1  EVM     network=${EVM_NETWORK}  payTo=${EVM_PAY_TO}`,
+    `                  facilitator=${FACILITATOR_URL}`,
     `  rail 2  Solana  network=${SOLANA_NETWORK}  payTo=${SOLANA_PAY_TO}`,
-    `  facilitator=${FACILITATOR_URL}`,
+    `                  facilitator=${SOLANA_FACILITATOR_URL}`,
   ];
   if (USING_DEFAULT_PAY_TO) {
     lines.push(

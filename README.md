@@ -20,9 +20,17 @@ carries both rails:
 | EVM | `base-sepolia` (default) · `base` | USDC | `0x40252CFDF8B20Ed757D61ff157719F33Ec332402` |
 | Solana | `solana-devnet` (default) · `solana` | USDC | `WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW` |
 
-Both are verified and settled through the same facilitator
-(`https://x402.org/facilitator`). On Solana, `extra.feePayer` is the
-facilitator's sponsor account, so a payer needs only USDC — never SOL for gas.
+Each rail settles through **its own facilitator** — they are not interchangeable:
+
+| Rail | Facilitator | Env |
+|---|---|---|
+| EVM | `https://x402.org/facilitator` | `FACILITATOR_URL` |
+| Solana | `https://facilitator.payai.network` | `SOLANA_FACILITATOR_URL` |
+
+The x402.org reference facilitator settles Base but not Solana, so the Solana
+rail defaults to PayAI's. On Solana, `extra.feePayer` is that facilitator's
+sponsor account — discovered from its `/supported` endpoint at boot — so a payer
+needs only USDC, never SOL for gas.
 
 ## Quickstart
 
@@ -63,10 +71,11 @@ Open <http://localhost:4023/> for the browser market demo (EVM wallet or Phantom
 
 1. Call a paid route with no payment → **402** with `accepts[]` quoting the exact price on **both** rails.
 2. Your client picks a rail and signs: EIP-3009 `transferWithAuthorization` (EVM) or a serialized SPL transfer (Solana).
-3. Retry with the `X-PAYMENT` header. The facilitator verifies and settles.
+3. Retry with the `X-PAYMENT` header. The facilitator **for that rail** verifies and settles.
 4. The server returns **the artifact in the 200 body**, plus `X-PAYMENT-RESPONSE` carrying `{ rail, network, transaction, payer }`.
 
-Mainnet: `NETWORK=base`, `SOLANA_NETWORK=mainnet-beta`, and a mainnet-capable `FACILITATOR_URL`.
+Mainnet: `NETWORK=base`, `SOLANA_NETWORK=mainnet-beta`, and mainnet-capable
+`FACILITATOR_URL` / `SOLANA_FACILITATOR_URL`.
 
 ## Real backend / API keys
 
