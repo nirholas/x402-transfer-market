@@ -162,7 +162,11 @@ Response `200`:
 }
 ```
 
-Unknown, sold or expired listings resolve to **no charge** — you get a free 404/409/410 instead of paying for a failure.
+The 402 challenge comes back **before** the listing id is resolved or the buyer wallet is
+parsed, so this route is always quotable — an unknown id is quoted at the default ask of
+$0.25. That also means payment settles before the sale is attempted: browse `GET /listings`
+(free) and confirm the listing is still `open` before paying, or you will pay for a
+404/409/410.
 
 ### POST /bookings — free
 Mint a booking token held by a wallet on either rail. Free — this is the market's inventory.
@@ -469,12 +473,12 @@ holding both rails:
 | 400 | `SELF_PURCHASE` | Buyer wallet already holds the token |
 | 403 | `NOT_HOLDER` | `holderKey` does not match the current holder |
 | 404 | `TOKEN_NOT_FOUND` | Unknown tokenId |
-| 404 | `LISTING_NOT_FOUND` | Unknown listingId (not charged) |
+| 404 | `LISTING_NOT_FOUND` | Unknown listingId — payment has settled, check `GET /listings/:id` first |
 | 404 | `TRANSFER_NOT_FOUND` | Unknown transferId |
 | 409 | `ALREADY_LISTED` | Token is already on the market |
-| 409 | `ALREADY_SOLD` | Listing has already been bought (not charged) |
+| 409 | `ALREADY_SOLD` | Listing has already been bought — payment has settled |
 | 410 | `TOKEN_EXPIRED` | The reservation start time has passed |
-| 410 | `LISTING_EXPIRED` | Listing expired with its booking (not charged) |
+| 410 | `LISTING_EXPIRED` | Listing expired with its booking — payment has settled |
 | 400 | `BAD_REQUEST` | Malformed body |
 
 ## Discovery

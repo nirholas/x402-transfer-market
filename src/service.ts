@@ -25,6 +25,15 @@ export const LIST_FEE = "$0.005";
 export const MIN_ASK = 0.01;
 export const MAX_ASK = Number(process.env.MAX_ASK || "5.00");
 
+/**
+ * Quoted by `POST /buy/:listingId` when the listing cannot be priced — an id
+ * that is unknown or a listing that is no longer open. The paywall answers with
+ * a 402 challenge before it looks anything up (see server.ts), so it needs a
+ * price it can quote without a listing in hand. This is the same default ask
+ * `parseAsk()` applies to a listing created without one.
+ */
+export const DEFAULT_ASK = "$0.25";
+
 export interface WalletRef {
   rail: Rail;
   address: string;

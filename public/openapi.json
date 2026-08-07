@@ -617,7 +617,7 @@
             }
           },
           "400": {
-            "description": "Not an EVM address or Solana pubkey",
+            "description": "Buyer is not an EVM address or Solana pubkey. Payment has already settled — the buyer wallet is validated after payment so the challenge is always reachable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -627,7 +627,7 @@
             }
           },
           "402": {
-            "description": "Payment required — dual-rail x402 challenge listing a Base (EVM) and a Solana entry.",
+            "description": "Payment required — dual-rail x402 challenge listing a Base (EVM) and a Solana entry. Returned before the listing is resolved and before the buyer wallet is parsed, so the route's terms are always discoverable; an unknown listing is quoted at the default $0.25 ask.",
             "content": {
               "application/json": {
                 "schema": {
@@ -637,7 +637,7 @@
             }
           },
           "404": {
-            "description": "Unknown listingId — not charged",
+            "description": "Unknown listingId. Payment has already settled — confirm the listing with the free GET /listings/{id} before paying.",
             "content": {
               "application/json": {
                 "schema": {
@@ -647,7 +647,7 @@
             }
           },
           "409": {
-            "description": "Listing already bought — not charged",
+            "description": "Listing already bought. Payment has already settled — check GET /listings first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -657,7 +657,7 @@
             }
           },
           "410": {
-            "description": "Listing expired — not charged",
+            "description": "Listing expired. Payment has already settled — check GET /listings first.",
             "content": {
               "application/json": {
                 "schema": {

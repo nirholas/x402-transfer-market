@@ -310,9 +310,13 @@ PRIVATE_KEY=0x... npm run client
 |---|---|---|
 | 400 | `SELF_PURCHASE` | Buyer wallet already holds the token |
 | 400 | `INVALID_WALLET` | Not an EVM address or Solana pubkey |
-| 404 | `LISTING_NOT_FOUND` | Unknown listingId — not charged |
-| 409 | `ALREADY_SOLD` | Listing already bought — not charged |
-| 410 | `LISTING_EXPIRED` | Listing expired — not charged |
+| 404 | `LISTING_NOT_FOUND` | Unknown listingId |
+| 409 | `ALREADY_SOLD` | Listing already bought |
+| 410 | `LISTING_EXPIRED` | Listing expired |
+
+The 402 challenge is returned before the listing is resolved and before the buyer wallet is
+parsed, so the route's terms are discoverable without a live listing id — and payment settles
+before the sale is attempted. Confirm the listing with the free `GET /listings/:id` first.
 
 ---
 

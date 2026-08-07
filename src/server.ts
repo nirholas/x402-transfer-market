@@ -9,6 +9,7 @@ import { ROUTE_SCHEMAS } from "./schemas.js";
 import {
   buyListing,
   createListing,
+  DEFAULT_ASK,
   getListing,
   getTransfer,
   holdingsFor,
@@ -30,8 +31,14 @@ app.use(express.json({ limit: "64kb" }));
 // ---- x402 paywall ----------------------------------------------------------
 // POST /list        → flat listing fee
 // POST /buy/:id     → the listing's own ask, so the 402 quotes the real price
-//                     of the booking being bought. Unknown/closed listings
-//                     resolve to null so the caller gets a free 404/409.
+//                     of the booking being bought.
+//
+// The challenge comes first, always. An unpaid request gets 402 and the full
+// `accepts` array before the listing id is resolved or the buyer wallet is
+// parsed, so a discovery probe (or any agent) can read this route's payment
+// terms without holding a live listing id. A closed or unknown listing, or a
+// malformed buyer, is the handler's business — after payment. Browse the free
+// `GET /listings` / `GET /listings/:id` before paying.
 app.use(
   paywall({
     "POST /list": {
@@ -41,10 +48,12 @@ app.use(
     },
     "POST /buy/:listingId": (req) => {
       const listing = getListing(req.path.split("/")[2] || "");
-      if (!listing || listing.status !== "open") return null;
+      const open = listing?.status === "open" ? listing : undefined;
       return {
-        price: listing.ask,
-        description: `Buy booking ${listing.booking.reference} at ${listing.booking.venue} (${listing.booking.kind}, party of ${listing.booking.party})`,
+        price: open?.ask ?? DEFAULT_ASK,
+        description: open
+          ? `Buy booking ${open.booking.reference} at ${open.booking.venue} (${open.booking.kind}, party of ${open.booking.party})`
+          : "Buy a listed booking token",
         outputSchema: ROUTE_SCHEMAS["POST /buy/:listingId"],
       };
     },
