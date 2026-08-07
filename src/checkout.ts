@@ -14,6 +14,10 @@
  * which our 402 challenge already carries), so the buyer needs only USDC and
  * never SOL for gas.
  *
+ * This is a BROWSER CHECKOUT helper only. Payment verification and settlement
+ * for BOTH rails happen in payments.ts via the x402 facilitator
+ * (`useFacilitator` from x402/verify) — this module is never in that path.
+ *
  * Mounted at /api/x402-checkout — the path the modal posts to by default.
  */
 import type { RequestHandler } from "express";
