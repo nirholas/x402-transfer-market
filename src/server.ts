@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { solanaCheckout } from "./checkout.js";
 import { paywall, payToBanner, withSettlement } from "./payments.js";
+import { ROUTE_SCHEMAS } from "./schemas.js";
 import {
   buyListing,
   createListing,
@@ -36,7 +37,7 @@ app.use(
     "POST /list": {
       price: LIST_FEE,
       description: "List a transferable booking token on the market",
-      outputSchema: { type: "object", description: "Signed listing" },
+      outputSchema: ROUTE_SCHEMAS["POST /list"],
     },
     "POST /buy/:listingId": (req) => {
       const listing = getListing(req.path.split("/")[2] || "");
@@ -44,7 +45,7 @@ app.use(
       return {
         price: listing.ask,
         description: `Buy booking ${listing.booking.reference} at ${listing.booking.venue} (${listing.booking.kind}, party of ${listing.booking.party})`,
-        outputSchema: { type: "object", description: "Booking token reassigned to the buyer, signed" },
+        outputSchema: ROUTE_SCHEMAS["POST /buy/:listingId"],
       };
     },
   }),

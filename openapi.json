@@ -838,9 +838,6 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
         "requestBody": {
@@ -899,18 +896,7 @@
             }
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/listings": {
@@ -978,23 +964,9 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/listings/{id}": {
@@ -1071,23 +1043,9 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/holdings/{wallet}": {
@@ -1167,23 +1125,9 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/transfers/{id}": {
@@ -1251,23 +1195,9 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/stats": {
@@ -1315,23 +1245,9 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/verify": {
@@ -1360,9 +1276,6 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
         "requestBody": {
@@ -1401,18 +1314,7 @@
             }
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     },
     "/health": {
@@ -1445,23 +1347,9 @@
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment Required"
           }
         },
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.000000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        }
+        "security": []
       }
     }
   },

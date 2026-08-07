@@ -63,6 +63,25 @@ only USDC, never SOL for gas. That value is read from the Solana facilitator's
 `/supported` endpoint at runtime, so pointing `SOLANA_FACILITATOR_URL`
 elsewhere automatically advertises that facilitator's sponsor instead.
 
+### Protocol version and route schemas
+
+This service speaks **x402 v1** — the challenge above is `{"x402Version": 1, "accepts": [...]}`,
+which is what the `x402-fetch` client shipped in `examples/` understands. x402 v2
+reshapes the challenge (schemas move to `extensions.bazaar.schema`, networks become
+CAIP-2 ids) and would break those clients, so v2 is a planned future upgrade for
+agentcash compatibility rather than something to expect from this endpoint today.
+
+Every `accepts[]` entry carries an `outputSchema` pair generated from `openapi.json`,
+so the challenge itself tells you how to spend your money:
+
+| Field | What it is |
+|---|---|
+| `outputSchema.input` | How to invoke the route — HTTP method plus its path/query parameters or JSON body fields |
+| `outputSchema.output` | JSON Schema of the paid `200` body, i.e. exactly what you are buying |
+
+An agent can therefore construct a valid call and validate the artifact it receives
+straight from the 402, with no out-of-band documentation.
+
 ## 3. Verify what you bought
 
 Artifacts are HMAC-SHA256 signed over canonical JSON. Re-check any of them for
