@@ -1,0 +1,28 @@
+# x402-transfer-market
+
+> Transfer or resell held bookings between wallets: signed listings and reassigned booking tokens, all in-response
+
+x402-transfer-market is an open-source repository by nirholas, part of the three.ws ecosystem.
+
+## Docs
+
+- [README](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md): install, usage and reference
+- [Why x402 for this](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#why-x402-for-this)
+- [Pay in USDC on Base or Solana: your client picks the rail](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#pay-in-usdc-on-base-or-solana-your-client-picks-the-rail)
+- [Quickstart](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#quickstart)
+- [API](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#api)
+- [How x402 works here](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#how-x402-works-here)
+- [Real backend / API keys](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#real-backend-api-keys)
+- [Human checkout](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#human-checkout)
+- [For AI agents](https://github.com/nirholas/x402-transfer-market/blob/HEAD/README.md#for-ai-agents)
+- [AGENTS.md](https://github.com/nirholas/x402-transfer-market/blob/HEAD/AGENTS.md): guidance for coding agents
+- [Full text for LLMs](https://github.com/nirholas/x402-transfer-market/blob/HEAD/llms-full.txt): the README inlined
+
+## Project
+
+- [Source](https://github.com/nirholas/x402-transfer-market)
+- [Issues](https://github.com/nirholas/x402-transfer-market/issues)
+- [Discussions](https://github.com/nirholas/x402-transfer-market/discussions)
+- [Homepage](https://nirholas.github.io/x402-transfer-market/)
+- [three.ws](https://three.ws): the platform this is part of
+- [All repositories by nirholas](https://github.com/nirholas/nirholas#readme)

@@ -118,3 +118,26 @@ nichxbt@gmail.com
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=nirholas/x402-transfer-market&type=Date)](https://www.star-history.com/#nirholas/x402-transfer-market&Date)
+
+<!-- three.ws:growth -->
+## Support the project
+
+If x402-transfer-market saves you time, **[star it on GitHub](https://github.com/nirholas/x402-transfer-market)**. Stars are how other developers and AI agents find the repositories worth trusting, and they cost you one click.
+
+Know someone who would use it? [Post on X](https://twitter.com/intent/tweet?text=x402-transfer-market%3A%20Transfer%20or%20resell%20held%20bookings%20between%20wallets%3A%20signed%20listings%20and%20reassigned%20booking%20tokens&url=https%3A%2F%2Fgithub.com%2Fnirholas%2Fx402-transfer-market) · [Share on Bluesky](https://bsky.app/intent/compose?text=x402-transfer-market%3A%20Transfer%20or%20resell%20held%20bookings%20between%20wallets%3A%20signed%20listings%20and%20reassigned%20booking%20tokens%20https%3A%2F%2Fgithub.com%2Fnirholas%2Fx402-transfer-market) · [Share on LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fnirholas%2Fx402-transfer-market) · [Submit to Hacker News](https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fgithub.com%2Fnirholas%2Fx402-transfer-market&t=x402-transfer-market%3A%20Transfer%20or%20resell%20held%20bookings%20between%20wallets%3A%20signed%20listings%20and%20reassigned%20booking%20tokens) · [Share on Reddit](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Fnirholas%2Fx402-transfer-market&title=x402-transfer-market%3A%20Transfer%20or%20resell%20held%20bookings%20between%20wallets%3A%20signed%20listings%20and%20reassigned%20booking%20tokens)
+
+## Built for AI agents too
+
+Coding agents and LLM tooling can read this repo directly: [AGENTS.md](./AGENTS.md), [llms.txt](./llms.txt), [llms-full.txt](./llms-full.txt). Point an agent at `https://github.com/nirholas/x402-transfer-market` and it has the context it needs.
+
+## More from the same author
+
+- [All repositories by nirholas](https://github.com/nirholas/nirholas#readme): the full catalog, grouped by topic
+- [three.ws](https://three.ws): the platform for 3D AI agents with Solana wallets, a skill marketplace and x402 payments
+- Questions or ideas: [open an issue](https://github.com/nirholas/x402-transfer-market/issues) or [start a discussion](https://github.com/nirholas/x402-transfer-market/discussions)
+
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=nirholas/x402-transfer-market)](https://github.com/nirholas/x402-transfer-market/graphs/contributors)
+
+<!-- /three.ws:growth -->

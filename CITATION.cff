@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: "x402-transfer-market"
+abstract: "Transfer or resell held bookings between wallets: signed listings and reassigned booking tokens, all in-response"
+license: Apache-2.0
+repository-code: "https://github.com/nirholas/x402-transfer-market"
+url: "https://three.ws"
+authors:
+  - name: three.ws
+    website: "https://three.ws"
