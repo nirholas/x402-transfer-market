@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "express": "^4.21.2",
+    "express": "^4.22.3",
     "x402": "^1.2.0",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.98.0",
