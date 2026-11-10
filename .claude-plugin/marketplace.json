@@ -1,0 +1,23 @@
+{
+  "name": "x402-transfer-market",
+  "owner": {
+    "name": "nirholas"
+  },
+  "description": "Transfer or resell held bookings between wallets: signed listings and reassigned booking tokens, paid over x402.",
+  "plugins": [
+    {
+      "name": "x402-transfer-market",
+      "source": "./plugins/x402-transfer-market",
+      "description": "Transfer or resell held bookings between wallets: signed listings and reassigned booking tokens, paid over x402.",
+      "category": "finance",
+      "tags": [
+        "x402",
+        "bookings",
+        "resale",
+        "marketplace",
+        "usdc",
+        "ai-agents"
+      ]
+    }
+  ]
+}

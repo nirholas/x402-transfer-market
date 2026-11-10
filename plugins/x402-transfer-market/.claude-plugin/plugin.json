@@ -1,0 +1,19 @@
+{
+  "name": "x402-transfer-market",
+  "version": "0.1.0",
+  "description": "Transfer or resell held bookings between wallets: signed listings and reassigned booking tokens, paid over x402.",
+  "author": {
+    "name": "nirholas"
+  },
+  "repository": "https://github.com/nirholas/x402-transfer-market",
+  "homepage": "https://nirholas.github.io/x402-transfer-market/",
+  "license": "Apache-2.0",
+  "keywords": [
+    "x402",
+    "bookings",
+    "resale",
+    "marketplace",
+    "usdc",
+    "ai-agents"
+  ]
+}
